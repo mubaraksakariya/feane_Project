@@ -1,0 +1,21 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('',views.adminHome,name='admin_home'),
+    path('signin',views.signin,name='admin_signin'),
+    path('signout',views.signout,name='admin_signout'),
+    path('inventory',views.inventory,name='inventory'),
+    path('show_orders',views.show_orders,name='show_orders'),
+    path('manage_order/<id>',views.manage_order,name='manage_order'),
+    path('accept_order/<id>',views.accept_order,name='accept_order'),
+    path('additem',views.additem,name='additem'),
+    path('addcategory',views.addcategory,name='addcategory'),
+    path('addsize',views.addsize,name='addsize'),
+    path('users',views.users,name='users'),
+    path('user_update/<id>',views.user_update,name='user_update'),
+    path('delete_profile/<id>',views.delete_profile,name='delete_profile'),
+    path('block_user/<id>',views.block_user,name='block_user'),
+    path('unblock_user/<id>',views.unblock_user,name='unblock_user'),
+
+]

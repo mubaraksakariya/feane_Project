@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+<!-- Product section -->
+
+{% block page-content %}
+<section class="food_section layout_padding">
+    <div class="container">
+        <div class="filters-content d-flex justify-content-center">
+            <div class="row grid w-50 ">
+                <div class="col-sm-12 col-md-12 all">           
+                    <div class="box">
+                    <div>
+                        <div class="img-box">
+                            <img src={{ product.product_image.image1.url}} alt="">
+                        </div>
+                        <div class="detail-box ">
+                            <h5 class="text-center " >
+                                {{ product.product_name }}
+                            </h5>
+                            <p class=" text-center " >
+                                {{ product.product_text }}
+                            </p>
+                            <div class="options d-flex justify-content-center">
+                                <h6>
+                                Rs {{ product.product_prize }}
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div> 
+            </div>
+        </div>
+    </div>
+    <div class="container d-flex justify-content-center">
+        <div class=" p-3 " >
+            <a href="#" class="btn btn-warning px-4 ">
+                <span class="text-white " > Buy now</span>
+            </a>
+        </div>
+        <div class=" p-3 " >
+            <a href="#" class="btn btn-warning px-3">
+                <span class="text-white " > Add to cart</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock page-content %}
+<!-- Product section -->

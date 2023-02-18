@@ -1,0 +1,48 @@
+{% extends 'adminbase.html' %}
+
+{% block page-content %}
+    <div class="container ">
+        <div class="row justify-content-center align-items-center pt-5">
+            <div class="col-md-6 ">
+                <form action="{% url 'user_update' user.id %}" method="post">
+                    {% csrf_token %}
+                    <div>
+                        <label for="bane" class=" pt-2 text-white ">First Name </label>
+                        <input type="text" class="form-control " placeholder="Users Name" name="name" value="{{user.first_name}}" />
+                    </div>
+                    <div>
+                        <label for="bane" class=" pt-2 text-white">Mobile </label>
+                        <input type="text" class="form-control" placeholder="Users Phone Number" name="number" value="{{user.phone_number}}"/>
+                    </div>
+                    <div>
+                        <label for="bane" class=" pt-2 text-white">Email </label>
+                        <input type="email" class="form-control" placeholder="Users Your Email" name="email" value="{{user.email}}" />
+                    </div>
+                    <div class="btn_box p-3 ">
+                        <button class="btn btn-warning " type="submit">
+                            UPDATE
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                <a class=" p-2 " href="{% url 'delete_profile' user.id %}">               
+                    <button class=" btn-danger " type="submit">DELETE USER</button>
+                </a>
+                {% if user.blocked %}
+                <p class="m-0" >This user is blocked</p>
+                <a class=" p-2 " href="{% url 'unblock_user' user.id %}">           
+                    <button class=" btn-danger " type="button">UN BLOCK</button>
+                </a>
+                {% else %}
+                <a class=" p-2 " href="{% url 'block_user' user.id %}">               
+                    <button class=" btn-danger " type="button">BLOCK USER</button>
+                </a>
+                {% endif %}
+                
+                
+            </div>
+        </div>
+    </div>
+
+{% endblock page-content %}

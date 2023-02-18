@@ -1,0 +1,167 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+    <!-- body section -->
+{% block page-content %}
+<div class="container ">
+  <div class="d-flex flex-column justify-content-center">
+    <!-- to add products----------------------------------- -->
+    <div class="row justify-content-center align-items-center g-2">
+      <div class="col-md-8 ">
+        <form class="  p-4" method="post" action="{% url 'additem' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Item name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_name">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Category</label>
+            <div class="col-sm-10">
+              <select name="category" class="form-select shadow p-1 mb-1 bg-white rounded" aria-label="Default select example">
+                <option selected>Not selected</option>
+                {% for category in categories %}
+                <option value="{{category.id}}"> {{category.category_name}} </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Size</label>
+            <div class="col-sm-10">
+              <select name="size" class="form-select shadow p-1 mb-1 bg-white rounded" aria-label="Default select example">
+                <option selected>Not selected</option>
+                {% for size in sizes %}
+                <option value="{{size.id}}"> {{size.size_type}} </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Item Count</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_stock_amount">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "> Photos </label>
+            <div class="col-sm-10 ">
+              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image1">
+              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image2">
+              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image3">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">product prize</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_prize">
+            </div>
+          </div>
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">product description</label>
+            <div class="col-sm-10">
+              <textarea class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_text"></textarea>
+            </div>
+          </div>
+        
+          <div class="form-group row">
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+            <div class="col-sm-10">
+              <button type="submit" class="btn btn-primary">Add product</button>
+            </div>
+          </div>
+        </form>
+      </div> 
+
+      
+
+      <div class="col">
+        <!-- to add category ------------------------------------------ -->
+        <div>
+          <div class="categoryform" id="categoryform">
+            <form class="  px-4"  method="post" action="{% url 'addcategory' %}" enctype="multipart/form-data" >
+              {% csrf_token %}
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-5 col-form-label text-white ">Category Name</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="category">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+                <div class="col">
+                  <button type="submit" class="btn btn-success px-4 mx-2 ">Add</button>
+                  <button onclick="closeForm(1)" class="btn btn-danger px-4 mx-2 ">Close</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="form-group row px-4"> 
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+            <div class="col-sm-10" >
+              <button onclick="openForm(1)" id="show"  class="btn btn-primary">Add Category</button>
+            </div>
+          </div>
+        </div> 
+            <!-- to add a size ----------------------- -->
+        <div>
+          <div class="sizeform" id="sizeform">
+            <form class="  px-4"  method="post" action="{% url 'addsize' %}" enctype="multipart/form-data" >
+              {% csrf_token %}
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-5 col-form-label text-white ">Size type</label>
+                <div class="col-sm-5">
+                    <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="category">
+                </div>
+              </div>
+              <div class="form-group row">
+                <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+                <div class="col">
+                  <button type="submit" class="btn btn-success px-4 mx-2 ">Add</button>
+                  <button onclick="closeForm(2)" class="btn btn-danger px-4 mx-2">Close</button>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="form-group row px-4"> 
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+            <div class="col-sm-10" >
+              <button onclick="openForm(2)" id="show2"  class="btn btn-primary">Add Size type</button>
+            </div>
+          </div>
+        </div>
+
+      
+            {% for message in messages %}
+              <span class = "text-warning" id="m"> {{ message }} </span>
+            {% endfor %}
+            
+    </div>
+  </div>       
+</div>
+
+
+<script>
+  function openForm(s) {
+    if (s == 1){
+      document.getElementById("categoryform").style.display = "block";
+      document.getElementById("show").style.display = "none";
+    }
+    else if(s == 2){
+      document.getElementById("sizeform").style.display = "block";
+      document.getElementById("show2").style.display = "none";
+    }
+    s = 0;
+  }
+
+  function closeForm(s) {
+    if(s == 1)
+      document.getElementById("categoryform").style.display = "none";
+    else if(s == 2)
+      document.getElementById("sizeform").style.display = "none";
+    s = 0
+  }
+</script>
+
+<!-- body section end -->
+{% endblock page-content %}

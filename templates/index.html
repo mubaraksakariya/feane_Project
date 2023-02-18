@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+  <!-- food section -->
+{% block page-content %}
+{% load static %}
+  <section class="food_section layout_padding">
+    <div class="container">
+      <div class="heading_container heading_center">
+        <h2>
+          Our Menu
+        </h2>
+      </div>
+
+      <ul class="filters_menu">
+        <li class="active" data-filter="*">All</li>
+        <li data-filter=".burger">Burger</li>
+        <li data-filter=".pizza">Pizza</li>
+        <li data-filter=".pasta">Pasta</li>
+        <li data-filter=".fries">Fries</li>
+      </ul>
+
+      <div class="filters-content">
+        <div class="row grid">
+          {% comment %} Boxes of products in home page {% endcomment %}
+          {% for product in products %}
+          <div class="col-sm-6 col-lg-4 all {{product.product_category.category_name}}">           
+            <div class="box">
+              <div>
+                <a href="./product/{{product.id}}">
+                  <div class="img-box">
+                    <img src={{ product.product_image.image1.url }} alt="">
+                  </div>
+                </a>
+                <div class="detail-box">
+                  <h5>
+                    {{ product.product_name }}
+                  </h5>
+                  <p>
+                    {{ product.product_text }}
+                  </p>
+                  <div class="options">
+                    <h6>
+                     Rs {{ product.product_prize }}
+                    </h6>
+                    <span type="text" id="{{ product.id }}" hidden>{{ product.id }} </span>
+                    <form action="">{% csrf_token %}</form>
+                    <button class="rounded-circle bg-warning" onclick="addToCart({{ product.id }})" >
+                      <img class="" src="{% static 'images/cart-icon.svg' %}" alt="">
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          {% comment %} Box {% endcomment %}
+          
+        </div>
+      </div>
+      <div class="btn-box">
+        <a href="">
+          View More
+        </a>
+      </div>
+    </div>
+</section>
+<script>
+function addToCart(p){
+    const product_id = document.getElementById(p).innerHTML
+    console.log(product_id);
+    let quantity = 0  
+    let csrf_token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+    data = JSON.stringify({'product_id': product_id, 'quantity': quantity})
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/store/addToCart", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+    xhr.onreadystatechange = function() {      
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText); 
+            document.getElementById('cart_count').innerHTML = response.cart_count
+        };
+    }
+    xhr.send(data);
+}
+  </script>
+  {% endblock page-content %}
+  
+  <!-- end food section -->
+
+  

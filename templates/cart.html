@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block page-content %}
+<div class="container ">
+    <div class="row">
+      <!-- Cart items -->
+      <div class="col-md-8">
+        {% if cart %}
+        {% for item in cart %}
+        <div>         
+          <div class="card w-100">
+            <div class=" d-flex justify-content-center " >
+             
+              <img class="img-thumbnail w-25" src="{{item.product.product_image.image1.url}}" class="card-img-top" alt="...">
+            </div>
+            <div class="card-body">
+              <a href="{% url 'product' item.product.id %}">
+              <h5 class="card-title"> {{item.product.product_name}} </h5></a>
+              <p class="card-text">{{item.product.product_text}}.</p>
+            </div>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">Rs {{item.product.product_prize}} </li>
+              <li class="list-group-item">Quantity {{item.quantity}} </li>
+              <li class="list-group-item"></li>
+            </ul>
+            <div class="card-body">
+              <a href="{% url 'removefromcart' item.id %}" class="card-link text-danger">Remove item</a>
+              <a href="#" class="card-link"></a>
+            </div>
+          </div>
+        </div> 
+        {% endfor %}
+        {% else %}
+          <div class="container h-100 d-flex flex-column justify-content-evenly align-content-end text-center">
+            <div>
+              <h1>Add something from the store </h1>
+            </div>
+          </div>
+        {% endif %}       
+      </div>
+      <!-- Cart total amount and details  -->
+      {% if cart %}
+      <div class="col-md-4 d-flex justify-content-end">
+        <div class="row">
+          <div class="w-100 ">
+            <div class="card w-100">
+              <div class="card-body">
+                <h5 class="card-title"></h5>
+                {% for item in cart  %}
+                <div class="py-2">
+                  <span class="card-tex">{{ item.product.product_name }}</span> x <span class="{{ forloop.counter }}">{{item.quantity}}</span>
+                </div>
+                {% endfor %}
+              </div>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"> <h3>Total </h3> <h6 class="d-flex justify-content-end">{{ sum }}</h6></li>
+              </ul>
+              <div class="card-body">
+                <a href="{% url 'checkout' %}" class="card-link btn btn-success">Checkout</a>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+</div> 
+{% endblock %}

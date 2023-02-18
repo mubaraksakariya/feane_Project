@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block page-content %}
+
+
+<div class="container">
+    <div class="row justify-content-center align-items-center g-2">
+        {% for item in cart %}
+        <div class="col-sm-4">
+            <div class="card" style="width: 18rem;">
+                <img src="{{item.product.product_image.image1.url}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                  <p class="card-text">
+                    
+                  </p>
+                </div>
+              </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

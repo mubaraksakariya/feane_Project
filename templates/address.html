@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block page-content %}
+    <div class="container">
+        <form action="{% url 'addaddress' user.id %}" method="post" class="w-50">
+            {% csrf_token %}
+            <div>
+                <input type="text" class="form-control m-3 shadow" placeholder="House Number" name="House" />
+            </div>
+            <div>             
+                <input type="text" class="form-control m-3 shadow" placeholder="Bulding number" name="Bulding"   />
+            </div>
+            <div>             
+                <input type="text" class="form-control m-3 shadow" placeholder="Street" name="Street" />
+            </div>
+            <div>               
+                <input type="text" class="form-control m-3 shadow" placeholder="City" name="City"  />
+            </div>
+            <div>                
+                <input type="text" class="form-control m-3 shadow" placeholder="PIN" name="PIN"  />
+            </div>
+            <div>               
+                <input type="text" class="form-control m-3 shadow" placeholder="Mobile" name="Mobile" />
+            </div>
+            {% for message in messages %}
+                <span>{{message}}</span>
+            {% endfor %}
+            <div class="btn_box p-3 ">
+                <button class="btn btn-warning " type="submit">
+                    ADD
+                </button>
+            </div>
+        </form>
+
+    </div>
+{% endblock %}
