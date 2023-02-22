@@ -33,9 +33,12 @@
         {% endfor %}
         <div class="p-3 ms-5 ps-5">
             <div class="ms-1 ps-1">
-                <button class="btn-lg btn-warning " type="submit">
+                <button class="btn btn-warning " type="submit">
                     Update
                 </button>
+                <a href="{% url 'profile' %}" class="btn btn-success ms-2 ">
+                    Cancel
+                </a>
             </div>
         </div>
     </form>

@@ -3,19 +3,63 @@
 
 
 <div class="container">
-    <div class="row justify-content-center align-items-center g-2">
-        {% for item in cart %}
-        <div class="col-sm-4">
+    <div class="row g-2">
+      <h3 class="text-center">Your Orders</h3>
+      {% if orders %}
+      <div class="col-sm-6">
+        {% for item in orders %}
             <div class="card" style="width: 18rem;">
-                <img src="{{item.product.product_image.image1.url}}" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <p class="card-text">
-                    
-                  </p>
+              <h5><a href="{% url 'cart_in_order' item.id %}">Order id - {{item.id}} </a></h5>
+              <div class="card-body">
+                <p class="card-text">
+                  {{item.order_created}} 
+                </p>
+              </div>
+            </div>
+        {% endfor %}
+      </div>
+      
+      
+      <div class="col-sm-6">
+      {% if cart %}
+        <h5 class="text-center">Order Items</h5>
+        <div class="">
+          {% for item in cart %}  
+            <div class="d-flex justify-content-center">
+              <div class="box" style="width: 18rem;">
+                <div class="img-box">
+                  <img src="{{item.product.first_image.url}}" alt="...">
+                </div>
+                <div class="detail-box">
+                  <a href="{% url 'product' item.product.id %}"><h5 class="card-title">{{ item.product.product_name }}</h5></a>
+                  <div class="d-flex justify-content-between">
+                    <p class="card-text">{{ item.quantity }}</p>
+                    <p>Rs{{ item.product.product_prize }}</p>
+                  </div>
                 </div>
               </div>
+            </div>
+          {% endfor %}     
         </div>
-        {% endfor %}
+      {% else %}
+      <div class="h-100 d-flex flex-column justify-content-center align-content-center">
+        <p class="text-center text-success">Select an order to View</p> 
+      </div>
+      {% endif %}
+      </div>
+     
+
+
+
+      {% else %}
+        <div class="col-sm-4">
+          <div class="card" style="width: 18rem;">
+            <p class="card-text">
+                All your orders are on the way    
+            </p>
+          </div>
+        </div>
+      {% endif %}
     </div>
 </div>
 

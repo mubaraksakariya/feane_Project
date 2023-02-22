@@ -20,7 +20,9 @@
                     <input type="text" class="form-control " placeholder="Users Name" name="number" value="{{user.phone_number}}" />
                 </div>
                 {% for message in messages %}
+                    {% if message.tags == 'info' %}
                     <span>{{message}}</span>
+                    {% endif %}
                 {% endfor %}
                 <div class="btn_box p-3 ">
                     <button class="btn btn-warning " type="submit">
@@ -48,6 +50,11 @@
                                         <p class="card-text"> {{address_.city}} </p>
                                     <a href="{% url 'deleteAddress' address_.id %}" class="card-link text-danger">Delete</a>
                                     <a href="{% url 'updateAddress' address_.id %}" class="card-link">Update</a>
+                                    {% for message in messages %}
+                                    {% if message.tags == 'error' %}
+                                    <span><br>{{message}}</span>
+                                    {% endif %}
+                                    {% endfor %}
                                     </div>
                                 </div>
                             </div>    

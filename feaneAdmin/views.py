@@ -5,6 +5,7 @@ from store.models import Product,Category,Images,Size
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import F
 
 
 
@@ -61,34 +62,67 @@ def inventory(request):
     }
     return render(request,'inventory.html',context=context)
 
+@admin_login_required
+def editproduct(request,id):
+    context = {
+        'product' : Product.objects.get(id = id),
+        'categories': Category.objects.all(),
+        'sizes' : Size.objects.all()
+    }  
+    return render(request,'editproduct.html',context)
 
-############### Add Item ################
 
 @admin_login_required
-def additem(request):
+def additem(request,id = None):
     if request.method == 'POST':
-        product_name = request.POST['product_name']
-        product_prize = request.POST['product_prize']
-        product_stock_amount = request.POST['product_stock_amount']
-        product_text = request.POST['product_text']
-        product_category = Category.objects.get(id = int(request.POST['category']))
-        product_size = Size.objects.get(id = int(request.POST['size']))
+        id = request.POST.get('id')
+        product_name = request.POST.get('product_name')
+        product_prize = request.POST.get('product_prize')
+        product_stock_amount = request.POST.get('product_stock_amount')
+        product_text = request.POST.get('product_text')
+        images = request.FILES.getlist('images')
+        try:
+            product_category = Category.objects.get(id = int(request.POST.get('category')))
+        except:
+            product_category = None
+        try:
+            product_size = Size.objects.get(id = int(request.POST.get('size')))
+        except:
+            product_size = None
         if int(product_stock_amount) > 1:
             product_available = True
         else:
             product_available = False
-        image = Images.objects.create(image1 = request.FILES['image1'],image2 = request.FILES['image2'],image3 = request.FILES['image3'])
-        product = Product.objects.create(
-            product_name = product_name,
-            product_stock_amount = product_stock_amount,
-            product_prize = product_prize,
-            product_text = product_text,
-            product_available = product_available,
-            product_category = product_category,
-            product_image = image,
-            product_size = product_size,
-        )
-        # product.save()
+        if id is not None:
+            product = Product.objects.get(id = id)
+            product.product_name = product_name
+            product.product_prize = product_prize
+            product.product_stock_amount = product_stock_amount
+            product.product_text = product_text
+            if product_category is not None:
+                product.product_category = product_category
+            if product_size is not None:
+                product.product_size = product_size
+            product.product_available = product_available
+            product.save()
+            if images:
+                image = Images.objects.filter(product = id)
+                image.delete()
+            for image in images:
+                    image = Images.objects.create(product=product,image = image) 
+        else:
+            product = Product.objects.create(
+                product_name = product_name,
+                product_stock_amount = product_stock_amount,
+                product_prize = product_prize,
+                product_text = product_text,
+                product_available = product_available,
+                product_category = product_category,
+                product_size = product_size,
+            )
+            for image in images:
+                image = Images.objects.create(product=product,image = image)
+            # product.save()       
         return redirect('inventory')
     context = {
         'categories' : Category.objects.all(),
@@ -96,30 +130,86 @@ def additem(request):
     }
     return render(request,'additem.html',context=context)
 
+@admin_login_required
+def deleteitem(request,id):
+    Product.objects.get(id = id).delete()
+    return redirect('inventory')
 ############## Add Category ##########################
 
 @admin_login_required
-def addcategory(request):
+def addcategory(request,id = None):
     if request.method == 'POST':
         category_name = request.POST['category']
-        if not Category.objects.filter(category_name = category_name).exists():
+        try:
+            id = request.POST['id']
+        except:
+            id = None    
+        if not Category.objects.filter(category_name = category_name).exists() and id is None:
             catogery = Category.objects.create(category_name = category_name)
-        else:    
+        elif id is None:    
             messages.info(request,'Category already exists')
-        return redirect('additem')
+        else:
+            category = Category.objects.get(id = id)
+            cat_old = category.category_name
+            if cat_old != category_name and bool(category_name.strip()):
+                category.category_name = category_name
+                category.save()
+            return redirect('addcategory')
+        return redirect('addcategory')
+    else:
+        categories = Category.objects.all()
+        categories = categories.annotate(total = F('id')*1)
+        for item in categories:
+            total = Product.objects.filter(product_category = item.id).count()
+            item.total = total
+        context = {
+            'categories':categories
+        }
+        return render(request,'categories.html',context)
+
+@admin_login_required
+def delete_category(request,id):
+    category = Category.objects.get(id = id)
+    category.delete()
+    return redirect('addcategory')
 
 ############## Add Size type ##########################
 
 @admin_login_required
-def addsize(request):
+def addsize(request,id=None):
     if request.method == 'POST':
-        category_name = request.POST['category']
-        if not Size.objects.filter(size_type = category_name).exists():
-            catogery = Size.objects.create(size_type = category_name)
-        else:    
+        size_name = request.POST['size']
+        try:
+            id = request.POST['id']
+        except:
+            id = None
+        print(id)
+        print(size_name)
+        if not Size.objects.filter(size_type = size_name).exists() and id == None:
+            size = Size.objects.create(size_type = size_name)
+        elif id == None: 
             messages.info(request,'Size already exists')
-        return redirect('additem')
+        else:
+            size = Size.objects.get(id = id)
+            size.size_type = size_name
+            size.save()
+        return redirect('addsize')
+    else:
+        size = Size.objects.all()
+        size = size.annotate(total = F('id')*1)
+        for item in size:
+            count = Product.objects.filter(product_size = item).count()
+            item.total = count
+        context = {
+            'size':size,
+        }
+        return render(request,'size.html',context)
 
+@admin_login_required
+def deletesize(request,id):
+    category = Size.objects.get(id = id)
+    category.delete()
+    return redirect('addsize')
 ############## User Profiles at admin side #############
 
 @admin_login_required
@@ -178,6 +268,7 @@ def unblock_user(request,id):
 def show_orders(request):
     context = {
         'orders' : Order.objects.filter(order_processed = False),
+        'admin':request.user
     }
     return render(request,'orders.html',context=context)
 

@@ -1,0 +1,90 @@
+{% extends 'adminbase.html' %}
+
+
+    <!-- body section -->
+{% block page-content %}
+<div class="container">
+	<nav class="navbar navbar-expand-lg navbar-light bg-black">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item px-3">
+						<a class="nav-link active text-white" aria-current="page" href="{% url 'inventory' %}">Products</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'addcategory' %}">Categories</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
+					</li>
+				</ul>
+				<form class="d-flex px-3">
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form>
+			</div>
+		</div>
+	</nav>
+</div>
+<div class="container ">
+    <div>
+        <table class="table table-dark table-hover">
+            <thead>
+            <tr>
+                <th class="text-center" scope="col">id</th>
+                <th class="text-center" scope="col">Category Name</th>
+                <th class="text-center" scope="col">Number of items</th>
+                <th class="text-center" scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in categories %}
+            <tr> 
+                <td class="text-center">{{ item.id }}</td>
+                <td class="text-center"><input type="text"  id = '{{ item.id }}' placeholder="{{ item.category_name }}" value="{{ item.category_name }}" onchange="copy({{ item.id }})"></td>
+                <td class="text-center" >{{item.total  }}</td>
+                <td class = "d-flex justify-content-center">
+                    <form action="addcategory" method="post">
+                        {% csrf_token %}
+                        <input type="text" id = "{{item.id}}a" name = "category" hidden>
+                        <input type="text" value = "{{ item.id }}" name= "id" hidden>
+                        <button class="btn btn-outline-success" type="submit">Update</button>
+                    </form>
+                    <a name="delete" id="" class="btn btn-outline-danger" href="{% url 'delete_category' item.id  %}" role="button">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <div class="container d-flex justify-content-end">
+            {% for message in messages %}
+            <span class= "text-warning px-3">{{message}}</span>
+            {% endfor %}
+            <form action="addcategory" method="post">
+                {% csrf_token %}
+                <input class='rounded-3 h-100' type="text" name= 'category'>
+                <button class="btn btn-outline-success" type="submit">Add a new item</button>
+            </form>
+        </div>
+    </div>
+	
+</div>
+
+<script>
+    function copy(id){
+        console.log(id+'a');
+        a = document.getElementById(id+'a')
+        b = document.getElementById(id)
+        a.value = b.value
+        console.log("asd");
+        console.log(a.value);
+    }
+</script>
+{% endblock page-content %}
+    <!-- body section end -->

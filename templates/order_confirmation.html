@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block page-content %}
+        
+    <div class="container d-flex justify-content-center ">
+        <div class="w-50 text-center">        
+            {% if cart %}  
+            <div class=" d-flex justify-content-center">
+                <div class="card w-50 d-flex justify-content-center ">
+                    {% for item in cart %}
+                    <div class="card-body">
+                        <img class="img-thumbnail w-25" src="{{item.product.first_image.url}}" class="card-img-top" alt="...">
+                        <a href="{% url 'product' item.product.id %}">
+                            <h5 class="card-title"> {{item.product.product_name}} </h5>
+                        </a>
+                    </div>
+                    {% endfor %}      
+                </div>
+            </div>
+            {% endif %}
+            <div class="text-center">
+                <h4>Thank you for shoping with us</h4> 
+                <a href=" {% url 'user_home'%}">Continue shoping</a>
+            </div>
+        </div> 
+        
+    </div>
+
+{% endblock %}

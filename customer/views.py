@@ -2,11 +2,14 @@ from django.shortcuts import render,HttpResponse,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from twilio.rest import Client
+import vonage
 from .models import User,Address
+from store.models import Order
 from store.models import Product
 import random
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.utils import timezone
 
 OTP = 123
 # Create your views here.
@@ -20,15 +23,22 @@ def index(request):
 # to send otp###########################
 
 def send_otp(phone_number,OTP):
-    account_sid = 'ACba9264ed85bf6990cb2dbaa8bd80d92c'
-    auth_token = '47b0bc61b8d096da0bebbabfa7109f87'
-    client = Client(account_sid, auth_token)
-    message = client.messages \
-        .create(
-            body= f"Your otp to signup is {OTP}" ,
-            from_= '+14305410892',
-            to = phone_number 
+    client = vonage.Client(key="26680761", secret="dwwQ3Qw8Sh26HXjy")
+    sms = vonage.Sms(client)
+    responseData = sms.send_message(
+        {
+            "from": "Vonage APIs",
+            "to": phone_number,
+            "text": f"Enter this OTP  {OTP}",
+        }
     )
+
+    if responseData["messages"][0]["status"] == "0":
+        print("Message sent successfully.")
+    else:
+        print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
+
+
 # to sign up###########################
 def userexist(request):
     email = request.POST.get('email','')
@@ -63,18 +73,6 @@ def user_signup(request):
     else:
         return redirect('/')
 
-# # signup with otp#########################
-
-# def otp_signup(request):
-#     if request.method == 'POST':
-#         phone_number = request.POST['number']
-#         send_otp(phone_number)
-#         return render(request,'otp_check.html')
-#     elif not request.user.is_authenticated:    
-#         return render(request,'otp_signup.html')
-#     else:
-#         return redirect('/')
-# to verify the otp#######################
 
 def otp_check(request,id):
     user = User.objects.get(id = id)
@@ -116,7 +114,10 @@ def user_signin(request):
             return redirect('/')
         else:
             messages.info(request,f'Invalid credential')
-            return redirect('/signin')
+        context = {
+            'email': email
+        }
+        return render(request,'signin.html',context)
     elif not request.user.is_authenticated:    
         return render(request,'signin.html')
     else:
@@ -124,9 +125,15 @@ def user_signin(request):
     
 @login_required(login_url='signin')
 def user_profile(request):
+    address = Address.objects.filter(user = request.user)
+    now = timezone.now()
+    
+    for item in address:
+        if not Order.objects.filter(user = request.user,delivery_address = item,order_processed = False).exists() and (now.date() - item.last_modified).days > 30 and item.disabled == True:
+            item.delete()
     context = {
         'user' : request.user,
-        'address': Address.objects.filter(user = request.user)
+        'address': Address.objects.filter(user = request.user,disabled = False)
     }
     return render(request,'profile.html',context=context)
 
@@ -134,6 +141,7 @@ def user_profile(request):
 def profile_update(request,id):
     user = User.objects.get(id = id)
     old_number = user.phone_number
+    old_email = user.email
     if request.method == 'POST':
         name = request.POST['name']
         number = request.POST['number']
@@ -142,7 +150,7 @@ def profile_update(request,id):
             user.first_name = name
         if email != user.email and bool(email.strip()) and not User.objects.filter(email=email).exists():
             user.email = email
-        else:
+        elif  old_email != email:
             messages.info(request,'email already taken, try something else')
         if number != user.phone_number and bool(number.strip()):
             user.phone_number = number
@@ -179,11 +187,20 @@ def addaddress(request,id):
             phone_number = request.POST['Mobile'],
         )
         address.save()
+        
+        if request.POST['from'] == '0':
+            return redirect('profile')
         return redirect(request.META.get('HTTP_REFERER'))
     else:
         return render(request,'address.html')
 def deleteAddress(request,id):
-    Address.objects.get(id = id).delete()
+    address = Address.objects.get(id = id)
+    orders = Order.objects.filter(user = request.user,delivery_address = address,order_processed = False).exists()
+    if not orders:
+        address.delete()
+    else:
+        address.disabled = True
+        address.save()
     return redirect('profile')
 def updateAddress(request,id):
     if request.method == "POST":

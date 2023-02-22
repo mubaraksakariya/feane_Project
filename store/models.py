@@ -12,10 +12,17 @@ class Product(models.Model):
     product_prize = models.IntegerField(_("prize"))
     product_text = models.TextField(_(""))
     product_available = models.BooleanField(_(""))
-    product_category = models.ForeignKey("Category", verbose_name=_(""), on_delete=models.CASCADE)
-    product_size = models.ForeignKey("Size", verbose_name=_(""), on_delete=models.CASCADE)
-    product_image = models.ForeignKey("Images", verbose_name=_(""), on_delete=models.CASCADE)
+    product_category = models.ForeignKey("Category", verbose_name=_(""), on_delete=models.SET_NULL , null=True)
+    product_size = models.ForeignKey("Size", verbose_name=_(""), on_delete=models.SET_NULL, null=True)
     
+    @property
+    def first_image(self):
+        images = Images.objects.filter(product = self.id)
+        print(images)
+        if images:
+            return images[0].image
+        else:
+            return None
 
 class Size (models.Model):
     size_type = models.CharField(_(""), max_length=50,default='normal')
@@ -24,9 +31,9 @@ class Category(models.Model):
     category_name = models.CharField(_(""), max_length=50)
 
 class Images(models.Model):
-    image1 = models.ImageField(_(""), upload_to='image_uploads',default='blank_img.jpg')
-    image2  = models.ImageField(_(""), upload_to='image_uploads',default='blank_img.jpg')
-    image3  = models.ImageField(_(""), upload_to='image_uploads',default='blank_img.jpg')
+    product = models.ForeignKey("Product", verbose_name=_(""), on_delete=models.CASCADE)
+    image = models.ImageField(_(""), upload_to='image_uploads',default='blank_img.jpg')
+    
 
 
 class Cart(models.Model):
@@ -39,7 +46,7 @@ class Cart(models.Model):
 class Order(models.Model):
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
     cart = models.ManyToManyField("Cart", verbose_name=_(""),related_name='cart')
-    delivery_address = models.ForeignKey("customer.Address", verbose_name=_(""), on_delete=models.DO_NOTHING)
+    delivery_address = models.ForeignKey("customer.Address", verbose_name=_(""), on_delete=models.SET_NULL,null=True)
     order_created = models.DateTimeField(_(""), auto_now=True, auto_now_add=False)
     order_modified = models.DateField(_(""), auto_now=False, auto_now_add=True)
     paid = models.BooleanField(_(""))

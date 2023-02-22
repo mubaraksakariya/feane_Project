@@ -29,7 +29,9 @@
           {% endfor %}
         </tbody>
     </table>
-    <a href="{% url 'accept_order' order_id %}"><button class="btn btn-outline-success" type="button">Accept</button></a>
+    <div class=''>
+        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Accept</button></a>
+    </div>  
     <div class="row justify-content-center align-items-center g-2 text-white">
         <div class="col-md-6 d-flex justify-content-center ">
            <div>

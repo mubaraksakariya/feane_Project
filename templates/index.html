@@ -27,7 +27,9 @@
               <div>
                 <a href="./product/{{product.id}}">
                   <div class="img-box">
-                    <img src={{ product.product_image.image1.url }} alt="">
+                    {% if product.first_image %}
+                      <img src="{{ product.first_image.url}}">
+                    {% endif %}
                   </div>
                 </a>
                 <div class="detail-box">

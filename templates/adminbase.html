@@ -36,7 +36,7 @@
 </head>
 
 <body class="sub_page">
-    <div class="hero_area">
+    <div class="hero_area position-fixed w-100 z-3">
         <div class="bg-box">
             <img src="{% static 'images/hero-bg.jpg'%}" alt="">
         </div>
@@ -72,15 +72,7 @@
                             </li>
                         </ul>
                         <div class="user_option">
-                            <form class="form-inline">
-                                <div class="input-group rounded">
-                                    <input type="search" class="form-control rounded" placeholder="Search User"
-                                        aria-label="Search" aria-describedby="search-addon" />
-                                    <span class="input-group-text border-0" id="search-addon">
-                                        <i class="bi bi-search"></i>
-                                    </span>
-                                </div>
-                            </form>
+                            
                             <div class=" px-5 " >
                                 <span class="text-white-50 h6 ">
                                     {{admin.email}}
@@ -97,7 +89,7 @@
         <!-- end header section -->
     </div>
     <!-- body section -->
-    <div class="container-fluid bg-black min-vh-100">
+    <div class="container-fluid bg-black min-vh-100  food_section layout_padding ">
 
   
     {% block page-content  %}

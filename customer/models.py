@@ -58,5 +58,6 @@ class Address(models.Model):
     city = models.CharField(_(""), max_length=50)
     pin_number = models.IntegerField(_(""))
     phone_number = models.CharField(_(""), max_length=50)
-    default_address = models.BooleanField(_(""),default=False)
+    disabled = models.BooleanField(_(""),default=False)
+    last_modified = models.DateField(_(""), auto_now=True, auto_now_add=False)
 

@@ -70,7 +70,12 @@
 
                         <form action="{% url 'signin' %}" method="post"> {% csrf_token %}                  
                             <div>
+                                {% if email %}
+                                <input type="email" value={{email}} class="form-control" placeholder="Your Email" name = "email" required />
+                                {% else %}
                                 <input type="email" class="form-control" placeholder="Your Email" name = "email" required />
+                                {% endif %}
+                                
                             </div>
                             <div>
                                 <input type="password" class="form-control" placeholder="Password" name = "password" required />

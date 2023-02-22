@@ -1,12 +1,13 @@
 import json
 from django.shortcuts import render,redirect,HttpResponse
 from customer.models import User,Address
-from store.models import Order
+from store.models import Order,Images
 from .models import Product,Category,Cart,Order,Payment_method,Payment
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.serializers import serialize
 from django.db.models import ExpressionWrapper,F,FloatField
+from django.contrib import messages
 # Create your views here.
 
 
@@ -26,6 +27,7 @@ def store(request):
 @login_required(login_url='/signin')
 def product(request,id):
     product = Product.objects.get(id = id)
+    images = Images.objects.filter(product = product)
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     try:
         item_count = Cart.objects.get(product=product,user = request.user,purchased = False).quantity
@@ -36,6 +38,7 @@ def product(request,id):
         'user': request.user,
         'cart_count':cart_count,
         'item_count':item_count,
+        'images':images
     }
     return render(request,'product.html',context = context)
 
@@ -101,6 +104,9 @@ def checkout(request):
 def placeOrder(request):
     if request.method == 'POST':
         address_id = request.POST['address']
+        if  not address_id:
+            messages.info(request,'Please add a delivery address with the order')
+            return redirect('checkout')
         payment_method = request.POST['payment']
         cart = Cart.objects.filter(user = request.user,purchased = False)
         amount = 0
@@ -127,21 +133,30 @@ def placeOrder(request):
                 delivery_address = Address.objects.get(id = address_id)     
             )
             for item in cart:
-                order.cart.add(item)
                 item.purchased = True
                 item.save()
-            
-        return redirect('user_home')
+                product = Product.objects.get(id = item.product.id)
+                product.product_stock_amount -= item.quantity
+                product.save()
+                order.cart.add(item)
+                
+        context = {
+            'cart' : cart
+        }
+        return render(request,'order_confirmation.html',context)
     else:
         return redirect('user_home')
 
 @login_required(login_url='/signin')
-def user_order(request):
-    order = Order.objects.filter(user = request.user,order_processed = False)
-    # cart = order.cart.all()
-    # print(cart)
-    # context = {
-    #     'orders' : order,
-    #     'cart'  : cart,
-    # }
-    # return render(request,'user_orders.html',context)
+def user_order(request,id = None):
+    if id is not None:
+        context = {
+            'cart' : Order.objects.get(id = id).cart.all(),
+            'orders'  : Order.objects.filter(user = request.user,order_processed = False),
+        }
+    else:
+        context = {
+            'cart' : None,
+            'orders' : Order.objects.filter(user = request.user,order_processed = False)
+        } 
+    return render(request,'user_orders.html',context)
