@@ -8,8 +8,8 @@
             <th scope="col">User Name</th>
             <th scope="col">Product name</th>
             <th scope="col">Quantity</th>
-            <th scope="col">Order_status</th>
-            <th scope="col">status</th>
+            <th scope="col">Order id</th>
+            <th scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -18,7 +18,7 @@
             <td>{{ items.user.first_name }}</td>
             <td>{{ items.product.product_name }}</td>
             <td>{{ items.quantity }}</td>
-            <td>{{ items.status }}</td>
+            <td>{{ order_id }}</td>
             <td><div class="">
                     
                     <a href=""><button class="btn btn-outline-danger" type="button">Delete</button></a>

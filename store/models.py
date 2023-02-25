@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from customer.models import User
 
+
 # Create your models here.
 #PRODUCT models here
 #############################################
@@ -18,7 +19,6 @@ class Product(models.Model):
     @property
     def first_image(self):
         images = Images.objects.filter(product = self.id)
-        print(images)
         if images:
             return images[0].image
         else:
@@ -43,6 +43,10 @@ class Cart(models.Model):
     purchased = models.BooleanField(_(""),default=False)
     status = models.CharField(_(""), max_length=50,null=True)
     
+    @property
+    def total(self):
+        return self.product.product_prize * self.quantity
+    
 class Order(models.Model):
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
     cart = models.ManyToManyField("Cart", verbose_name=_(""),related_name='cart')
@@ -53,18 +57,24 @@ class Order(models.Model):
     payment_details = models.ForeignKey("Payment", verbose_name=_(""), on_delete=models.CASCADE)
     order_processed = models.BooleanField(_(""),default=False)
 
-class Payment_method(models.Model):
-    user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
-    name = models.CharField(_(""), max_length=50)
-    card_number = models.CharField(_(""), max_length=50,null=True)
-    expire_date = models.DateField(_(""), auto_now=False, auto_now_add=False,null=True)
-    cvv = models.IntegerField(_(""),null=True)
-    upi_id = models.CharField(_(""), max_length=50,null=True)
+    @property
+    def total(self):
+        cart = self.cart.all()
+        return sum([item.total for item in cart])
+
+
+# class Payment_method(models.Model):
+#     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
+#     name = models.CharField(_(""), max_length=50)
+#     card_number = models.CharField(_(""), max_length=50,null=True)
+#     expire_date = models.DateField(_(""), auto_now=False, auto_now_add=False,null=True)
+#     cvv = models.IntegerField(_(""),null=True)
+#     upi_id = models.CharField(_(""), max_length=50,null=True)
 
 class Payment(models.Model):
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
-    payment_type = models.ForeignKey("Payment_method", verbose_name=_(""), on_delete=models.CASCADE,default='cod')
-    amount = models.FloatField(_(""))
+    payment_type = models.CharField(_(""), max_length=50,null=True)
+    payment_id = models.CharField(_(""), max_length=50,null=True)
     date = models.DateField(_(""), auto_now=True, auto_now_add=False)
 
 

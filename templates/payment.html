@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block page-content %}
+<input hidden type="text" id="YOUR_KEY_ID" value="{{YOUR_KEY_ID}}">
+<input hidden type="text" id="order_id" value="{{order_id}}">
+<input hidden type="text" id="name" value="{{name}}">
+<input hidden type="text" id="email" value="{{email}}">
+<input hidden type="text" id="contact" value="{{contact}}">
+<button hidden id="rzp-button1" >Pay</button>
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    YOUR_KEY_ID = document.getElementById('YOUR_KEY_ID').value
+    order_id = document.getElementById('order_id').value
+    name = document.getElementById('name').value
+    email = document.getElementById('email').value
+    contact = document.getElementById('contact').value
+    btn = document.getElementById('rzp-button1')
+var options = {
+    "key": YOUR_KEY_ID, // Enter the Key ID generated from the Dashboard
+    "amount": {{amount}}, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "Feane",
+    "description": "Test Transaction",
+    "image": "https://example.com/your_logo",
+    "order_id": order_id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function (response){    
+        window.location.href = '/store/payment_callback/'+response.razorpay_payment_id.toString()
+    },
+    "prefill": {
+        "name": name,
+        "email": email,
+        "contact": contact
+    },
+    "notes": {
+        "address": "Razorpay Corporate Office"
+    },
+    "theme": {
+        "color": "#3399cc"
+    },
+    
+};
+
+var rzp1 = new Razorpay(options);
+rzp1.on('payment.failed', function (response){
+    id = response.error.metadata.payment_id
+    url = '/store/payment_callback/'+id.toString()
+    console.log(url);
+    window.location.href = url
+        
+});
+
+window.onload = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+
+</script>
+
+{% endblock %}

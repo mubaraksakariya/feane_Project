@@ -22,8 +22,10 @@
 						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
 					</li>
 				</ul>
-				<form class="d-flex px-3">
-					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
+					{% csrf_token %}
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input type="text" name="item" value="product" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>
 			</div>
@@ -34,20 +36,24 @@
 	<table class="table table-dark table-hover">
 		<thead>
 		<tr>
+			<th class='text-center' scope="col">#</th>
 			<th class='text-center' scope="col">Item</th>
 			<th class='text-center' scope="col">Prize</th>
 			<th class='text-center' scope="col">Stock</th>
 			<th class='text-center' scope="col">Category</th>
+			<th class='text-center' scope="col">Size</th>
 			<th class='text-center' scope="col">Action</th>
 		</tr>
 		</thead>
 		<tbody>
 			{% for product in products %}
-		<tr> 
+		<tr>
+			<td class='text-center'>{{ forloop.counter }}</td> 
 			<td class='text-center'>{{ product.product_name }}</td>
 			<td class='text-center'>{{ product.product_prize }}</td>
 			<td class='text-center'>{{ product.product_stock_amount }}</td>
 			<td class='text-center'>{{ product.product_category.category_name }}</td>
+			<td class='text-center'>{{ product.product_size.size_type }}</td>
 			<td class='text-center'>
 				<a class="btn btn-outline-success" href="{% url 'editproduct' product.id %}">Update</a>
 				<a class="btn btn-outline-danger" href="{% url 'deleteitem' product.id %}">Delete</a>

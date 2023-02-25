@@ -36,7 +36,7 @@
             <div class="container-fluid mb-3 p-1 d-lg-flex justify-content-end ">
                 <a href="{% url 'addaddress' user.id %}"><span class="btn btn-outline-success m-2">Add address</span></a>
                 <a href="{% url 'user_order' %}"><span class="btn btn-outline-success m-2">Your orders</span></a>
-                <a href=""><span class="btn btn-outline-success m-2">Order history</span></a>
+                <a href="{% url 'user_order_history' %}"><span class="btn btn-outline-success m-2">Order history</span></a>
             </div>
             <!-- Adress feilds -->
             {% if address %}
@@ -47,7 +47,8 @@
                                 <div class="card w-auto rounded-4 shadow">
                                     <div class="card-body">
                                     <h5 class="card-title">Address -{{ forloop.counter }} </h5>
-                                        <p class="card-text"> {{address_.city}} </p>
+                                        <p class="card-text">House No : {{address_.house_number}} </p>
+                                        <p class="card-text">City : {{address_.city}} </p>
                                     <a href="{% url 'deleteAddress' address_.id %}" class="card-link text-danger">Delete</a>
                                     <a href="{% url 'updateAddress' address_.id %}" class="card-link">Update</a>
                                     {% for message in messages %}

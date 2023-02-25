@@ -8,6 +8,7 @@ from store.models import Order
 from store.models import Product
 import random
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -91,6 +92,7 @@ def otp_check(request,id):
         OTP = random.randrange(111111, 999999)
         user.otp = OTP
         user.save()
+        print(user.id)
         send_otp(user.phone_number,OTP=OTP)
         context = {
             'user' : user,
@@ -109,6 +111,18 @@ def user_signin(request):
         if user is not None and  user.blocked:
             messages.info(request,f'{email}  your account is suspended temporarily')
             return redirect('signin')
+        elif user is not None and user.phone_number_verified is False:
+            OTP = random.randrange(111111, 999999)
+            user = User.objects.get(id = user.id)
+            user.otp = OTP
+            user.save()
+            send_otp(user.phone_number,OTP=OTP)
+            context = {
+            'user' : user,
+            }
+            response = render(request,'otp_check.html',context)
+            response.set_cookie('return_url',request.path)
+            return response
         elif user is not None:
             login(request,user)
             return redirect('/')
@@ -174,7 +188,7 @@ def user_signout(request):
 
 
 # ############Add Address ######################
-
+@login_required(login_url='signin')   
 def addaddress(request,id):
     if request.method == 'POST':
         address = Address(
@@ -193,6 +207,8 @@ def addaddress(request,id):
         return redirect(request.META.get('HTTP_REFERER'))
     else:
         return render(request,'address.html')
+
+@login_required(login_url='signin')   
 def deleteAddress(request,id):
     address = Address.objects.get(id = id)
     orders = Order.objects.filter(user = request.user,delivery_address = address,order_processed = False).exists()
@@ -202,6 +218,8 @@ def deleteAddress(request,id):
         address.disabled = True
         address.save()
     return redirect('profile')
+
+@login_required(login_url='signin')   
 def updateAddress(request,id):
     if request.method == "POST":
         address = Address.objects.get(id=id)

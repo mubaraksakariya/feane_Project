@@ -1,13 +1,17 @@
 import json
+from django.conf import settings
 from django.shortcuts import render,redirect,HttpResponse
 from customer.models import User,Address
 from store.models import Order,Images
-from .models import Product,Category,Cart,Order,Payment_method,Payment
+from .models import Product,Category,Cart,Order,Payment
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.core.serializers import serialize
 from django.db.models import ExpressionWrapper,F,FloatField
 from django.contrib import messages
+import razorpay
+import requests
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 
@@ -90,16 +94,20 @@ def removefromcart(request,id):
 @login_required(login_url='/signin')
 def checkout(request): 
     cart = Cart.objects.filter(user = request.user.id,purchased = False)
-    cart = cart.annotate(total = ExpressionWrapper(F('product__product_prize') *F('quantity'),FloatField()))
-    total = 0
+    # cart = cart.annotate(total = ExpressionWrapper(F('product__product_prize') *F('quantity'),FloatField()))
+    Total = 0
     for item in cart:
-        total = total + item.total 
+        Total = Total + item.total 
     context = {
         'address' : Address.objects.filter(user = request.user),
             'cart':cart,
-            'total':total
+            'total':Total
     }
     return render(request,'checkout.html',context=context)
+
+
+########### Placing order and Payments##############
+
 @login_required(login_url='/signin')
 def placeOrder(request):
     if request.method == 'POST':
@@ -111,20 +119,12 @@ def placeOrder(request):
         cart = Cart.objects.filter(user = request.user,purchased = False)
         amount = 0
         for item in cart:
-            amount += item.product.product_prize * item.quantity
+            amount += item.total
         
         if payment_method == 'cod':
-            if not Payment_method.objects.filter(user = request.user,name = 'cod').exists():
-                payment_type = Payment_method.objects.create(
-                    user = request.user,
-                    name = 'cod'
-                )
-            else:
-                payment_type = Payment_method.objects.get(user = request.user,name = 'cod')
             payment = Payment.objects.create(
                 user = request.user,
-                amount = amount,
-                payment_type = payment_type
+                payment_type = 'cod'
             )         
             order = Order.objects.create(
                 user = request.user,
@@ -139,13 +139,65 @@ def placeOrder(request):
                 product.product_stock_amount -= item.quantity
                 product.save()
                 order.cart.add(item)
-                
-        context = {
-            'cart' : cart
-        }
-        return render(request,'order_confirmation.html',context)
+            context = {
+                'cart' : cart
+            }
+            return render(request,'order_confirmation.html',context)
+        else:
+            request.session['delivery_address'] = address_id
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,settings.RAZORPAY_SECRET_KEY))
+            data = { "amount": amount*100, "currency": "INR", "receipt": "Online_Payment" }
+            payment = client.order.create(data=data)
+            context = {
+                'YOUR_KEY_ID': settings.RAZORPAY_KEY_ID,
+                'amount':amount*100,
+                'order_id' : payment['id'],
+                'name':request.user.first_name,
+                'email': request.user.email,
+                'contact':request.user.phone_number,
+            }
+            return render(request,'payment.html',context)
     else:
         return redirect('user_home')
+
+@csrf_exempt
+def payment_callback(request,id):
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,settings.RAZORPAY_SECRET_KEY))
+    online_payment = client.payment.fetch(id)
+    cart = Cart.objects.filter(user = request.user,purchased = False)
+    amount = 0
+    for item in cart:
+        amount += item.total
+    delivery_address = Address.objects.get(id = request.session.get('delivery_address'))
+    if online_payment['status'] != 'failed':
+        payment = Payment.objects.create(
+                user = request.user,
+                payment_type = online_payment['method'],
+                payment_id = online_payment['id']
+        )
+        order = Order.objects.create(
+                user = request.user,
+                paid = True,
+                payment_details = payment,
+                delivery_address = delivery_address
+        )
+        for item in cart:
+                item.purchased = True
+                item.save()
+                product = Product.objects.get(id = item.product.id)
+                product.product_stock_amount -= item.quantity
+                product.save()
+                order.cart.add(item)
+        context = {
+                'cart' : cart
+            }
+        return render(request, 'order_confirmation.html',context)
+    else:
+        messages.info(request,"Payment Failed, Try Again")
+        return redirect('checkout')
+
+
+
 
 @login_required(login_url='/signin')
 def user_order(request,id = None):
@@ -153,10 +205,44 @@ def user_order(request,id = None):
         context = {
             'cart' : Order.objects.get(id = id).cart.all(),
             'orders'  : Order.objects.filter(user = request.user,order_processed = False),
+            'id' : id,
         }
     else:
+        try:
+            cart = Order.objects.filter(user = request.user,order_processed = False).first().cart.all()
+            id = cart.id
+            print(id)
+        except:
+            cart = None
+            id = None
+
         context = {
-            'cart' : None,
-            'orders' : Order.objects.filter(user = request.user,order_processed = False)
+            'cart' : cart,
+            'orders' : Order.objects.filter(user = request.user,order_processed = False),
+            'id' : id
         } 
     return render(request,'user_orders.html',context)
+
+
+@login_required(login_url='/signin')
+def user_order_history(request,id = None):
+    if id is not None:
+        context = {
+            'cart' : Order.objects.get(id = id).cart.all(),
+            'orders'  : Order.objects.filter(user = request.user,order_processed = True),
+            'id' : id,
+        }
+    else:
+        try:
+            cart = Order.objects.filter(user = request.user,order_processed = True).first().cart.all()
+            id = cart.id
+        except:
+            cart = None
+            id = None
+        context = {
+            'cart' : cart,
+            'orders' : Order.objects.filter(user = request.user,order_processed = True),
+            'id' : id
+        } 
+    return render(request,'user_order_history.html',context)
+

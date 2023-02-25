@@ -22,8 +22,10 @@
 						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
 					</li>
 				</ul>
-				<form class="d-flex px-3">
-					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
+					{% csrf_token %}
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input type="text" name="item" value="category" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>
 			</div>
@@ -68,7 +70,7 @@
             {% endfor %}
             <form action="addcategory" method="post">
                 {% csrf_token %}
-                <input class='rounded-3 h-100' type="text" name= 'category'>
+                <input class='rounded-3 h-100' type="text" name= 'category' required>
                 <button class="btn btn-outline-success" type="submit">Add a new item</button>
             </form>
         </div>

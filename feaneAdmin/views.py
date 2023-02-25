@@ -1,4 +1,5 @@
 from django.shortcuts import render,redirect
+from urllib3 import HTTPResponse
 from customer.models import User
 from store.models import Cart,Category,Order
 from store.models import Product,Category,Images,Size
@@ -6,6 +7,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
+from django.db.models import Q
 
 
 
@@ -54,11 +56,9 @@ def signout(request):
 
 @admin_login_required
 def inventory(request):
-    products = Product.objects.all()
-    admin = User.objects.get(email=request.user.email)
     context = {
-        'products':products,
-        'admin':admin
+        'products':Product.objects.all(),
+        'admin':User.objects.get(email=request.user.email)
     }
     return render(request,'inventory.html',context=context)
 
@@ -191,8 +191,9 @@ def addsize(request,id=None):
             messages.info(request,'Size already exists')
         else:
             size = Size.objects.get(id = id)
-            size.size_type = size_name
-            size.save()
+            if bool(size_name.strip()): 
+                size.size_type = size_name
+                size.save()
         return redirect('addsize')
     else:
         size = Size.objects.all()
@@ -215,6 +216,16 @@ def deletesize(request,id):
 @admin_login_required
 def users(request):
     users = User.objects.all().order_by('email')
+    admin = request.user
+    context = {
+        'users' : users,
+        'admin': admin,
+    }
+    return render(request,'users.html',context=context)
+
+@admin_login_required
+def blocked_users(request):
+    users = User.objects.filter(blocked = True).order_by('email')
     admin = request.user
     context = {
         'users' : users,
@@ -271,6 +282,13 @@ def show_orders(request):
         'admin':request.user
     }
     return render(request,'orders.html',context=context)
+@admin_login_required
+def all_orders(request):
+    context = {
+        'orders' : Order.objects.all(),
+        'admin':request.user
+    }
+    return render(request,'orders.html',context=context)
 
 @admin_login_required
 def manage_order(request,id):
@@ -295,5 +313,42 @@ def accept_order(request,id):
         item.save()
     return redirect('show_orders')
 
-
-
+def adminside_search(request):
+    if request.method == 'POST':
+        search_string = request.POST['search_string'] 
+        item = request.POST['item']
+        if item == 'product':
+            context = {
+                'products': Product.objects.filter(product_name__icontains = search_string),
+                'admin':User.objects.get(email=request.user.email)
+            }
+            return render(request,'inventory.html',context)
+        if item == 'category':
+            print(item)
+            categories = Category.objects.filter(category_name__icontains = search_string)
+            categories = categories.annotate(total = F('id')*1)
+            for item in categories:
+                total = Product.objects.filter(product_category = item.id).count()
+                item.total = total
+            context = {
+                'categories':categories
+            }
+            return render(request,'categories.html',context)
+        if item == 'size':
+            size = Size.objects.filter(size_type__icontains = search_string)
+            size = size.annotate(total = F('id')*1)
+            for item in size:
+                count = Product.objects.filter(product_size = item).count()
+                item.total = count
+            context = {
+                'size':size,
+            }
+            return render(request,'size.html',context)
+        if item == 'user':
+            users = User.objects.filter(Q(first_name__icontains = search_string) |  Q(email__icontains = search_string)).order_by('email')
+        admin = request.user
+        context = {
+            'users' : users,
+            'admin': admin,
+        }
+        return render(request,'users.html',context=context)
