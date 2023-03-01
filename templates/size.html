@@ -48,9 +48,6 @@
                 <td class="text-center"><input type="text"  id = '{{ item.id }}' placeholder="{{ item.size_type }}" value="{{ item.size_type }}" onchange="copy({{ item.id }})"></td>
                 <td class="text-center">{{item.total  }}</td>
                 <td class = "d-flex justify-content-center">
-                    {% for message in messages %}
-                    <span class= "text-warning px-3">{{message}}</span>
-                    {% endfor %}
                     <form action="addsize" method="post">
                         {% csrf_token %}
                         <input type="text" id = "{{item.id}}a" name = "size" hidden>

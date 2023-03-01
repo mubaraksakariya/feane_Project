@@ -42,9 +42,12 @@ class User(AbstractUser):
     username = None
     phone_number = models.CharField(max_length=13)
     phone_number_verified = models.BooleanField(_(""),default=False)
-    otp = models.IntegerField(default=0000)
+    otp = models.IntegerField(default=0000,null=True)
     email = models.EmailField(_('email address'),unique=True)
     blocked = models.BooleanField(_(""),default=False)
+    updated_at = models.DateField(_(""), auto_now=True, auto_now_add=False)
+    is_deleted = models.BooleanField(_(""),default=False)
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -60,4 +63,6 @@ class Address(models.Model):
     phone_number = models.CharField(_(""), max_length=50)
     disabled = models.BooleanField(_(""),default=False)
     last_modified = models.DateField(_(""), auto_now=True, auto_now_add=False)
+    is_deleted = models.BooleanField(_(""),default=False)
+
 

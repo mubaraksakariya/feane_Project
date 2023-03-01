@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from customer.models import User
-
+import pytz
 
 # Create your models here.
 #PRODUCT models here
@@ -15,7 +15,10 @@ class Product(models.Model):
     product_available = models.BooleanField(_(""))
     product_category = models.ForeignKey("Category", verbose_name=_(""), on_delete=models.SET_NULL , null=True)
     product_size = models.ForeignKey("Size", verbose_name=_(""), on_delete=models.SET_NULL, null=True)
-    
+    updated_at = models.DateTimeField(auto_now=True)
+    is_deleted = models.BooleanField(_(""),default=False)
+
+
     @property
     def first_image(self):
         images = Images.objects.filter(product = self.id)
@@ -26,9 +29,14 @@ class Product(models.Model):
 
 class Size (models.Model):
     size_type = models.CharField(_(""), max_length=50,default='normal')
+    is_deleted = models.BooleanField(_(""),default=False)
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Category(models.Model):
     category_name = models.CharField(_(""), max_length=50)
+    is_deleted = models.BooleanField(_(""),default=False)
+    updated_at = models.DateTimeField(auto_now=True)
+
 
 class Images(models.Model):
     product = models.ForeignKey("Product", verbose_name=_(""), on_delete=models.CASCADE)
@@ -42,6 +50,7 @@ class Cart(models.Model):
     quantity = models.IntegerField(_(""))
     purchased = models.BooleanField(_(""),default=False)
     status = models.CharField(_(""), max_length=50,null=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     @property
     def total(self):
@@ -56,6 +65,11 @@ class Order(models.Model):
     paid = models.BooleanField(_(""))
     payment_details = models.ForeignKey("Payment", verbose_name=_(""), on_delete=models.CASCADE)
     order_processed = models.BooleanField(_(""),default=False)
+
+    @property
+    def order_date(self):
+        tz = pytz.timezone('Asia/Kolkata')
+        return self.order_created
 
     @property
     def total(self):

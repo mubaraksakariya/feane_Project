@@ -82,9 +82,13 @@ def otp_check(request,id):
         val = request.POST['OTP']      
         if val == str(user.otp):
             user.phone_number_verified = True
+            user.otp = None
             user.save()
-            login(request,user)
-            return redirect(return_url)
+
+            if request.user.is_authenticated:
+                return redirect(return_url)
+            else:
+                return redirect('signin')
         else:
             messages.info(request,'OTP is not correct, try again')
             return render(request,'otp_check.html')

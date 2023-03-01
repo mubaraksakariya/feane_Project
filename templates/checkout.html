@@ -39,12 +39,24 @@
                 {% for item in address %}    
                 <div class="form-check mx-3">
                     <input checked class="form-check-input border border-primary" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value = "{{item.id}}">
-                    <label class="form-check-label" for="flexRadioDefault1">
-                        {{item.building_number}}
-                    </label>
-                        <p>{{item.building_name}}</p>
-                        <p>{{item.phone_number}}</p>
-                        <p>{{item.city}}</p>
+                    <label class="form-check-label text-justify" for="flexRadioDefault1">
+                        <div class="d-flex">
+                            <label>House Number &nbsp;&nbsp;:</label>
+                            <p  class="px-2">{{item.house_number}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <label>Bulding Number :</label>
+                            <p  class="px-2">{{item.building_number}}</p>
+                        </div>
+                        <div class="d-flex">
+                            <label>Phone &nbsp;&nbsp;:</label>
+                            <p  class="px-2" >{{item.phone_number}}</p>
+                        </div>     
+                        <div class="d-flex">
+                            <label>City &nbsp;&nbsp;:</label>
+                            <p  class="px-2" >{{item.city}}</p>
+                        </div>
+                         
                 </div>
                 {% endfor %}
                 <div class="d-flex justify-content-center p-2">
@@ -55,7 +67,7 @@
                     {% endif %}
                 </div>
                 <div id="addForm">
-                    <form action="{% url 'addaddress' user.id %}" method="post" class="w-75">
+                    <form id="form" action="{% url 'addaddress' user.id %}" method="post" class="w-75">
                         {% csrf_token %}
                         <input type="text" name="from" hidden value="1">
                         <div>
@@ -83,7 +95,7 @@
                             <button class="btn btn-warning " type="submit">
                                 ADD
                             </button>
-                            <button class="btn btn-danger " onclick="hideform()">
+                            <button class="btn btn-danger " id= "close_btn" onclick="hideform()">
                                 Cancel
                             </button>
                             
@@ -156,10 +168,12 @@
         form.style.display = 'block' 
         btnshow.style.display = 'none'
     }
-    function hideform(){
+    document.getElementById('close_btn').addEventListener('click' ,function(event){
+        event.preventDefault()
+        document.getElementById('form').reset()
         form.style.display = 'none' 
         btnshow.style.display = 'block' 
-    }
+    })
 
     
     Paymentform.addEventListener('submit', (event) => {

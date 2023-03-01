@@ -8,6 +8,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
 from django.db.models import Q
+import pytz
+from datetime import datetime
+
 
 
 
@@ -57,7 +60,7 @@ def signout(request):
 @admin_login_required
 def inventory(request):
     context = {
-        'products':Product.objects.all(),
+        'products':Product.objects.filter(is_deleted = False).order_by('-updated_at'),
         'admin':User.objects.get(email=request.user.email)
     }
     return render(request,'inventory.html',context=context)
@@ -66,8 +69,8 @@ def inventory(request):
 def editproduct(request,id):
     context = {
         'product' : Product.objects.get(id = id),
-        'categories': Category.objects.all(),
-        'sizes' : Size.objects.all()
+        'categories': Category.objects.all().exclude(id = Product.objects.get(id = id).product_category.id ),
+        'sizes' : Size.objects.all().exclude(id = Product.objects.get(id = id).product_size.id)
     }  
     return render(request,'editproduct.html',context)
 
@@ -132,7 +135,9 @@ def additem(request,id = None):
 
 @admin_login_required
 def deleteitem(request,id):
-    Product.objects.get(id = id).delete()
+    product = Product.objects.get(id = id)
+    product.is_deleted=True
+    product.save()
     return redirect('inventory')
 ############## Add Category ##########################
 
@@ -146,7 +151,10 @@ def addcategory(request,id = None):
             id = None    
         if not Category.objects.filter(category_name = category_name).exists() and id is None:
             catogery = Category.objects.create(category_name = category_name)
-        elif id is None:    
+        elif id is None:
+            category = Category.objects.get(category_name = category_name)
+            category.is_deleted = False
+            category.save()
             messages.info(request,'Category already exists')
         else:
             category = Category.objects.get(id = id)
@@ -157,7 +165,7 @@ def addcategory(request,id = None):
             return redirect('addcategory')
         return redirect('addcategory')
     else:
-        categories = Category.objects.all()
+        categories = Category.objects.filter(is_deleted = False).order_by('-updated_at')
         categories = categories.annotate(total = F('id')*1)
         for item in categories:
             total = Product.objects.filter(product_category = item.id).count()
@@ -170,7 +178,8 @@ def addcategory(request,id = None):
 @admin_login_required
 def delete_category(request,id):
     category = Category.objects.get(id = id)
-    category.delete()
+    category.is_deleted = True
+    category.save()
     return redirect('addcategory')
 
 ############## Add Size type ##########################
@@ -187,7 +196,10 @@ def addsize(request,id=None):
         print(size_name)
         if not Size.objects.filter(size_type = size_name).exists() and id == None:
             size = Size.objects.create(size_type = size_name)
-        elif id == None: 
+        elif id == None:
+            size = Size.objects.get(size_type = size_name)
+            size.is_deleted = False
+            size.save()
             messages.info(request,'Size already exists')
         else:
             size = Size.objects.get(id = id)
@@ -196,7 +208,7 @@ def addsize(request,id=None):
                 size.save()
         return redirect('addsize')
     else:
-        size = Size.objects.all()
+        size = Size.objects.filter(is_deleted = False).order_by('updated_at')
         size = size.annotate(total = F('id')*1)
         for item in size:
             count = Product.objects.filter(product_size = item).count()
@@ -208,14 +220,15 @@ def addsize(request,id=None):
 
 @admin_login_required
 def deletesize(request,id):
-    category = Size.objects.get(id = id)
-    category.delete()
+    size = Size.objects.get(id = id)
+    size.is_deleted = True
+    size.save()
     return redirect('addsize')
 ############## User Profiles at admin side #############
 
 @admin_login_required
 def users(request):
-    users = User.objects.all().order_by('email')
+    users = User.objects.all().order_by('updated_at')
     admin = request.user
     context = {
         'users' : users,
@@ -261,6 +274,7 @@ def delete_profile(request,id):
     user = User.objects.get(id = int(id))
     user.delete()
     return redirect('users')
+
 @admin_login_required
 def block_user(request,id):
     user = User.objects.get(id = int(id))
@@ -278,10 +292,11 @@ def unblock_user(request,id):
 @admin_login_required
 def show_orders(request):
     context = {
-        'orders' : Order.objects.filter(order_processed = False),
+        'orders' : Order.objects.filter(order_processed = False).order_by('order_created'),
         'admin':request.user
     }
     return render(request,'orders.html',context=context)
+
 @admin_login_required
 def all_orders(request):
     context = {
@@ -301,7 +316,6 @@ def manage_order(request,id):
     }
     return render(request,'order_detailes.html',context=context)
 
-
 @admin_login_required
 def accept_order(request,id):
     order = Order.objects.get(id = id)
@@ -313,6 +327,7 @@ def accept_order(request,id):
         item.save()
     return redirect('show_orders')
 
+@admin_login_required
 def adminside_search(request):
     if request.method == 'POST':
         search_string = request.POST['search_string'] 

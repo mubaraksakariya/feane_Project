@@ -19,12 +19,19 @@
             </div>
             <ul class="list-group list-group-flush">
               <li class="list-group-item">Rs {{item.product.product_prize}} </li>
-              <li class="list-group-item">Quantity {{item.quantity}} </li>
+              <li class="list-group-item d-flex justify-content-between">
+                  <div id = "q{{item.id}}">Quantity {{item.quantity}}</div>
+                  <div><div class="text-center">
+                    <button class="btn btn-outline-warning py-1" onclick="decrement({{item.id}})">-</button>
+                    <input class="border rounded border-warning py-0 px-0 text-center " id='{{item.id}}' type=number min=1 max=5 name = 'quantity' value="{{item.quantity}}" > 
+                    <button class="btn btn-outline-warning py-1" onclick="increment({{item.id}})">+</button>
+                </div></div>  
+              </li>
               <li class="list-group-item"></li>
             </ul>
-            <div class="card-body">
+            <div class="card-body d-flex justify-content-between">
               <a href="{% url 'removefromcart' item.id %}" class="card-link text-danger">Remove item</a>
-              <a href="#" class="card-link"></a>
+              
             </div>
           </div>
         </div> 
@@ -47,12 +54,12 @@
                 <h5 class="card-title"></h5>
                 {% for item in cart  %}
                 <div class="py-2">
-                  <span class="card-tex">{{ item.product.product_name }}</span> x <span class="{{ forloop.counter }}">{{item.quantity}}</span>
+                  <span class="card-tex">{{ item.product.product_name }}</span> x <span id= "c{{item.id}}" class="{{ forloop.counter }}">{{item.quantity}}</span>
                 </div>
                 {% endfor %}
               </div>
               <ul class="list-group list-group-flush">
-                <li class="list-group-item"> <h3>Total </h3> <h6 class="d-flex justify-content-end">{{ sum }}</h6></li>
+                <li class="list-group-item"> <h3>Total </h3> <h6 id="total" class="d-flex justify-content-end">{{ sum }}</h6></li>
               </ul>
               <div class="card-body">
                 <a href="{% url 'checkout' %}" class="card-link btn btn-success">Checkout</a>
@@ -64,5 +71,53 @@
       </div>
       {% endif %}
     </div>
+    <form action="" method="post">
+      {% csrf_token %}
+    </form>
 </div> 
+
+<script>
+  // Spinner input 
+  // let n = document.getElementById('quantity').value;
+  // n = parseInt(n)
+  // document.getElementById('quantity').innerHTML = n
+function increment(cart_item_id) {
+  document.getElementById(cart_item_id).stepUp();
+  let n = document.getElementById(cart_item_id).value;
+  n = parseInt(n)
+  document.getElementById(cart_item_id).innerHTML = n
+  document.getElementById("c"+cart_item_id).innerHTML = n
+  document.getElementById("q"+cart_item_id).innerHTML = "Quantity "+n
+  cart_count_change(cart_item_id,n)
+}
+function decrement(cart_item_id) {
+  document.getElementById(cart_item_id).stepDown();
+  let n = document.getElementById(cart_item_id).value;
+  n = parseInt(n) 
+  document.getElementById(cart_item_id).innerHTML = n
+  document.getElementById("c"+cart_item_id).innerHTML = n
+  document.getElementById("q"+cart_item_id).innerHTML = "Quantity "+n
+  cart_count_change(cart_item_id,n)
+}
+
+
+function cart_count_change(cart_item_id,count){
+    let csrf_token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+
+    data = JSON.stringify({'cart_item_id': cart_item_id, 'count': count})
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/store/cart_count_change", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+    xhr.onreadystatechange = function() {      
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText); 
+            console.log(response);
+            document.getElementById("total").innerHTML = response["cart_count"]
+        };
+    }
+    xhr.send(data);
+}
+
+</script>
 {% endblock %}

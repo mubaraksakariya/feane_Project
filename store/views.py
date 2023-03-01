@@ -18,7 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 ### Store homepage #####################################
 @login_required(login_url='/signin')
 def store(request):
-    products = Product.objects.all()
+    products = Product.objects.filter(is_deleted = False)
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     context = {
         'user': request.user.first_name,
@@ -60,6 +60,13 @@ def cart(request):
         'sum':sum,      
     }
     return render(request,'cart.html',context=context)
+
+@login_required(login_url='/signin')
+def cartItems(request):
+    id_list = Cart.objects.filter(user = request.user,purchased = False)
+    id_list = list(id_list.values_list('product', flat=True))
+    response_data = {'myList': id_list}
+    return JsonResponse(response_data)
 
 @login_required(login_url='/signin')
 def addToCart(request,id=None):
@@ -246,3 +253,21 @@ def user_order_history(request,id = None):
         } 
     return render(request,'user_order_history.html',context)
 
+@login_required(login_url='/signin')
+def cart_count_change(request):
+    if request.method == 'POST':
+        data = request.body.decode("utf-8")
+        data = json.loads(data)
+        cart_item_id = data.get('cart_item_id')
+        count = data.get('count')
+        cart_item = Cart.objects.get(id = cart_item_id)
+        cart_item.quantity = count
+        cart_item.save()
+
+        cart = Cart.objects.filter(user = request.user,purchased = False)
+        cart_total = 0
+        cart_total = sum([item.total for item in cart])
+        response = {
+            'cart_count': cart_total,
+        }
+        return JsonResponse(response)
