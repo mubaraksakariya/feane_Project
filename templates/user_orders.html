@@ -13,11 +13,25 @@
 
 <div class="container">
     <div class="row g-2">
-      <h3 class="text-center">Your Orders on the line</h3>
+      <div class="float-start">
+        <h3 class="text-center">Your Orders on the line</h3>
+      
+        {% if cart %}
+          {% if order.status != '0' %}
+          <div class="py-2 float-end ">
+            <a class="btn btn-danger" href="{% url 'cancel_request' id %}">Cancel this order</a>
+          </div>
+          {% else %}
+          <div class="py-2 float-end text-success font-weight-bold">
+            <span>Cancel request Given</span>
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
       
       {% if orders %}
-      
-        <div class="col-sm-5 text-center">
+        
+        <div class="col-sm-5">
           <h5 class="text-center">Orders</h6>
           <div class="scroll">
           
@@ -28,15 +42,17 @@
                 <h5 name="{{item.id}}" class="text-center"></h5>
                 <div class="card-body">
                   <p class="card-text">
-                    Date :{{item.order_created}}
+                    Date :{{item.order_date}}
                   </p>
                   <p class="card-text">
-                    Total :{{item.total}}
+                    Total :{{item.discounted_total}}
                   </p>
                   <p class="card-text">
                     Payment Type :{{item.payment_details.payment_type}}
                   </p>
-
+                  <p class="card-text">
+                   Amount Payed  :Rs {{item.amount_to_pay}}
+                  </p>
                   <!-- <p class="card-text">
                     Paymentid:{{item.payment_details.payment_id}}
                   </p> -->
@@ -48,9 +64,14 @@
         </div>
       </div>
         
-        
         <div class="col-sm-7">
           {% if cart %}
+          <div>{{ order.get_status_display }}</div>
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width:{{order.order_progress}}%">
+                </div>
+              </div>
+              
           <h5 class="text-center">Order Items</h5>
           <div class="row">
             {% for item in cart %}

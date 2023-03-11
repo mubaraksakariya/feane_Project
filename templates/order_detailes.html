@@ -4,33 +4,45 @@
 <div class="container ">
     <table class="table table-dark table-hover">
         <thead>
-          <tr>
+          <tr class="text-center">
             <th scope="col">User Name</th>
             <th scope="col">Product name</th>
             <th scope="col">Quantity</th>
             <th scope="col">Order id</th>
-            <th scope="col">Action</th>
+            <!-- <th scope="col">Action</th> -->
           </tr>
         </thead>
         <tbody>
             {% for items in cart %}
-          <tr> 
+          <tr class="text-center"> 
             <td>{{ items.user.first_name }}</td>
             <td>{{ items.product.product_name }}</td>
             <td>{{ items.quantity }}</td>
             <td>{{ order_id }}</td>
-            <td><div class="">
-                    
+            <!-- <td>
+                <div class="">
                     <a href=""><button class="btn btn-outline-danger" type="button">Delete</button></a>
                 </div>
-            </td>
+            </td> -->
 
           </tr>
           {% endfor %}
         </tbody>
     </table>
     <div class=''>
+        {% if order.status == '1' %}
         <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Accept</button></a>
+        {% elif order.status == '2' %}
+        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Prepared</button></a>
+        {% elif order.status == '3' %}
+        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Packed</button></a>
+        {% elif order.status == '4' %}
+        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Delivered</button></a>
+        {% elif order.status == '0' %}
+        <a href="{% url 'cancel_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Confirm Cancel Request</button></a>
+        {% else %}
+        <a href="{% url 'all_orders' %}"><button class="btn btn-lg btn-outline-success" type="button">Back</button></a>
+        {% endif %}
     </div>  
     <div class="row justify-content-center align-items-center g-2 text-white">
         <div class="col-md-6 d-flex justify-content-center ">

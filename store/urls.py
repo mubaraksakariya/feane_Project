@@ -4,6 +4,8 @@ from . import views
 
 urlpatterns = [
     path('',views.store,name='store'),
+    path('search',views.search,name='search'),
+    path('<int:id>',views.store,name='store'),
     path('product/<id>',views.product,name='product'),
     path('cart',views.cart, name='cart'),
     path('addToCart',views.addToCart, name ="addToCart"),
@@ -20,4 +22,10 @@ urlpatterns = [
     path('user_order_history_cart/<id>',views.user_order_history,name='user_order_history_cart'),
     
     path('payment_callback/<id>', views.payment_callback, name='payment_callback'),
+    path('wallet', views.wallet, name='wallet'),
+    path('cancel_request/<order_id>', views.cancel_request, name='cancel_request'),
+
+    path('check_coupon', views.check_coupon, name='check_coupon'),  
+
+    path('invoice/<order_id>', views.invoice, name='invoice'),  
 ]

@@ -9,18 +9,31 @@
           Our Menu
         </h2>
       </div>
-
+      <form action="{% url 'search' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group d-flex justify-content-end">
+          <div class="form-outline">
+            <input name="search-term" type="search" id="form1" class="form-control" placeholder="search"/>
+          </div>
+          <button type="submit" class="btn btn-warning">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+      
       <ul class="filters_menu">
-        <li class="active" data-filter="*">All</li>
-        <li data-filter=".burger">Burger</li>
-        <li data-filter=".pizza">Pizza</li>
+        <a href="{% url 'store' %}"><li data-filter="*" id = "all" >All</li></a>
+        {% for item in category %}
+        <a href="{% url 'store' item.id %}"><li id="{{item.id}}">{{ item.category_name }}</li></a>
+        {% endfor %}
+        <!-- <li data-filter=".pizza">Pizza</li>
         <li data-filter=".pasta">Pasta</li>
-        <li data-filter=".fries">Fries</li>
+        <li data-filter=".fries">Fries</li> -->
       </ul>
-
+        
       <div class="filters-content">
         <div class="row grid">
-          {% comment %} Boxes of products in home page {% endcomment %}
+          
           {% for product in products %}
           <div class="col-sm-6 col-lg-4 all {{product.product_category.category_name}}">           
             <div class="box">
@@ -38,6 +51,9 @@
                   </h5>
                   <p>
                     {{ product.product_text }}
+                  </p>
+                  <p>
+                    {{ product.product_size.size_type }}
                   </p>
                   <div class="options">
                     <h6>
@@ -59,9 +75,12 @@
         </div>
       </div>
       <div class="btn-box">
-        <a href="">
-          View More
-        </a>
+        {% if products.has_previous %}
+            <a href="?page={{ products.previous_page_number }}&item={{item}}">prev</a>
+        {% endif %}
+        {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}&item={{item}}">next</a>
+        {% endif %}
       </div>
     </div>
 </section>
@@ -69,6 +88,7 @@
 function addToCart(p){
     const product_id = document.getElementById(p).innerHTML
     let quantity = 0  
+    console.log(product_id);
     let csrf_token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
     let btn = document.getElementById("tooltip"+p)
 
@@ -88,7 +108,7 @@ function addToCart(p){
 }
 
 window.onload = function(){
-
+  
   var xhr = new XMLHttpRequest();
   xhr.open("GET", "/store/cartItems", true);
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -111,6 +131,13 @@ window.onload = function(){
   }
   
 </script>
+{% block scripts %}
+<script src="{% static 'js/custom.js' %}"></script>
+<script src="{% static 'js/helper.js' %}"></script>
+<script src=" {% static 'js/confirmation.js' %} "></script>
+{% endblock scripts %}
+  
+
   {% endblock page-content %}
   
   <!-- end food section -->

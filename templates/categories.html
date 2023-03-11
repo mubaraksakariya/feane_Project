@@ -21,6 +21,9 @@
 					<li class="nav-item px-3">
 						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
 					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'coupons' %}">Coupons</a>
+					</li>
 				</ul>
 				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
 					{% csrf_token %}
@@ -74,6 +77,23 @@
                 <button class="btn btn-outline-success" type="submit">Add a new item</button>
             </form>
         </div>
+    </div>
+    <div class="pagination d-flex justify-content-center  ">
+        <span class="step-links text-white">
+            {% if categories.has_previous %}
+                <a href="?page=1&item=category&search_string={{search_string}}">&laquo; first</a>
+                <a href="?page={{ categories.previous_page_number }}&item=category&search_string={{search_string}}">previous</a>
+            {% endif %}
+    
+            <span class="current-page">
+                Page {{ categories.number }} of {{ categories.paginator.num_pages }}.
+            </span>
+    
+            {% if categories.has_next %}
+                <a href="?page={{ categories.next_page_number }}&item=category&search_string={{search_string}}">next</a>
+                <a href="?page={{ categories.paginator.num_pages }}&item=category&search_string={{search_string}}">last &raquo;</a>
+            {% endif %}
+        </span>
     </div>
 	
 </div>

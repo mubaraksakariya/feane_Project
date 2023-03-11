@@ -4,7 +4,7 @@
   <!-- User Profile -->
 <div class="container">
     <div class="row justify-content-between g-2">
-        <div class="col mt-4">
+        <div class="col-md mt-4">
             <form action="{% url 'profile_update' user.id %}" method="post" name="RegForm"  >
                 {% csrf_token %}
                 <div>
@@ -32,17 +32,18 @@
             </form>
            
         </div>
-        <div class="col">
-            <div class="container-fluid mb-3 p-1 d-lg-flex justify-content-end ">
+        <div class="col-md">
+            <div class="container-fluid mb-3 p-1 d-lg-flex justify-content-center">
                 <a href="{% url 'addaddress' user.id %}"><span class="btn btn-outline-success m-2">Add address</span></a>
                 <a href="{% url 'user_order' %}"><span class="btn btn-outline-success m-2">Your orders</span></a>
                 <a href="{% url 'user_order_history' %}"><span class="btn btn-outline-success m-2">Order history</span></a>
+                <a href="{% url 'wallet' %}"><span class="btn btn-outline-success m-2">Wallet</span></a>
             </div>
             <!-- Adress feilds -->
             {% if address %}
                 {% for address_ in address %}
                     <div class="py-1">
-                        <div class="row g-2 justify-content-end">
+                        <div class="row g-2 justify-content-center">
                             <div class="col-md-12 w-75">
                                 <div class="card w-auto rounded-4 shadow">
                                     <div class="card-body">

@@ -26,7 +26,7 @@
                             <h5 name="{{item.id}}" class="text-center"></h5>
                             <div class="card-body">
                                 <p class="card-text">
-                                    Date :{{item.order_created}}
+                                    Date :{{item.order_date}}
                                 </p>
                                 <p class="card-text">
                                     Total :{{item.total}}
@@ -34,7 +34,9 @@
                                 <p class="card-text">
                                     Payment Type :{{item.payment_details.payment_type}}
                                 </p>
-
+                                <p class="card-text">
+                                    Amount Payed  :Rs {{item.amount_to_pay}}
+                                </p>
                                 <!-- <p class="card-text">
                                     Paymentid:{{item.payment_details.payment_id}}
                                 </p> -->

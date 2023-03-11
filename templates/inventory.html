@@ -21,6 +21,9 @@
 					<li class="nav-item px-3">
 						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
 					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'coupons' %}">Coupons</a>
+					</li>
 				</ul>
 				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
 					{% csrf_token %}
@@ -36,7 +39,7 @@
 	<table class="table table-dark table-hover">
 		<thead>
 		<tr>
-			<th class='text-center' scope="col">#</th>
+			<th class='text-center' scope="col">Id</th>
 			<th class='text-center' scope="col">Item</th>
 			<th class='text-center' scope="col">Prize</th>
 			<th class='text-center' scope="col">Stock</th>
@@ -48,7 +51,7 @@
 		<tbody>
 			{% for product in products %}
 		<tr>
-			<td class='text-center'>{{ forloop.counter }}</td> 
+			<td class='text-center'>{{ product.id }}</td> 
 			<td class='text-center'>{{ product.product_name }}</td>
 			<td class='text-center'>{{ product.product_prize }}</td>
 			<td class='text-center'>{{ product.product_stock_amount }}</td>
@@ -66,6 +69,23 @@
 		<a href="{% url 'additem' %}"> <button class=" btn btn-outline-success px-4 py-2 " >Add item</button> </a>
 	</div>
 	
+</div>
+<div class="pagination d-flex justify-content-center">
+    <span class="step-links text-white">
+        {% if products.has_previous %}
+            <a href="?page=1&item=product&search_string={{search_string}}">&laquo; first</a>
+            <a href="?page={{ products.previous_page_number }}&item=product&search_string={{search_string}}">previous</a>
+        {% endif %}
+
+        <span class="current-page">
+            Page {{ products.number }} of {{ products.paginator.num_pages }}.
+        </span>
+
+        {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}&item=product&search_string={{search_string}}">next</a>
+            <a href="?page={{ products.paginator.num_pages }}&item=product&search_string={{search_string}}">last &raquo;</a>
+        {% endif %}
+    </span>
 </div>
 {% endblock page-content %}
     <!-- body section end -->

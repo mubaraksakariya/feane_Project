@@ -65,8 +65,8 @@
         </div>
         <div class="container d-flex justify-content-center">
             <div class=" p-3 " >
-                <a href="#" onclick="" class="btn btn-warning px-4 ">
-                    <span class="text-white " > Buy now</span>
+                <a href="{% url 'checkout' %}" onclick="" class="btn btn-warning px-4 ">
+                    <span class="text-white " > CheckOut</span>
                 </a>
             </div>
             <input type="hidden" id="product_id" value="{{ product.id }}">
@@ -74,11 +74,13 @@
                 {% csrf_token %}
                 <!-- Your form fields here -->
               </form>
+            {% if not product.is_deleted %}
             <div class=" p-3 " >
                 <button onclick="addToCart()" class="btn btn-warning px-3">
                     <span class="text-white " > Add to cart</span>
                 </button>
             </div>
+            {% endif %}
         </div>
     </div>
     

@@ -52,6 +52,16 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
     objects = UserManager()
+    
+    @property
+    def wallet_balance(self):
+        wallet = Wallet.objects.filter(user = self)
+        if wallet is not None:
+            balance = sum([item.amount for item in wallet])
+            return balance
+        else:
+            return 0
+        
 
 class Address(models.Model):
     user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE)
@@ -64,5 +74,19 @@ class Address(models.Model):
     disabled = models.BooleanField(_(""),default=False)
     last_modified = models.DateField(_(""), auto_now=True, auto_now_add=False)
     is_deleted = models.BooleanField(_(""),default=False)
+
+class Wallet(models.Model):
+    TRANSACTION_CHOICES = (
+        ('1', 'Cancellation'),
+        ('2', 'Deposit'),
+        ('3', 'Payment'),
+        ('4', 'Others'),
+    )
+    user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE)
+    transaction_date = models.DateTimeField(_(""), auto_now=False, auto_now_add=True)
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES,default='1')
+    amount = models.FloatField(_(""),default= 0)
+
+
 
 

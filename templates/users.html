@@ -24,6 +24,7 @@
 					{% csrf_token %}
 					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
 					<input type="text" name="item" value="user" hidden>
+					<input type="text" name="blocked" value="{{blocked}}" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>
 			</div>
@@ -39,6 +40,7 @@
             <th scope="col">email</th>
             <th scope="col">phone number</th>
             <th scope="col">phone number verified</th>
+			<th scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -49,11 +51,39 @@
             <td>{{ user.email }}</td>
             <td>{{ user.phone_number }}</td>
             <td>{{ user.phone_number_verified }}</td>
+			<td>
+				{% if user.blocked %}
+                <a class=" p-2 " href="{% url 'unblock_user' user.id %}">           
+                    <button class=" btn-success " type="button">UN BLOCK</button>
+                </a>
+                {% else %}
+                <a class=" p-2 " href="{% url 'block_user' user.id %}">               
+                    <button class=" btn-danger " type="button">BLOCK USER</button>
+                </a>
+                {% endif %}
+			</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       <!-- <a href="#"> <button class=" btn-warning rounded-pill px-4 py-2" >Add User</button> </a> -->
+</div>
+<div class="pagination d-flex justify-content-center  ">
+	<span class="step-links text-white">
+		{% if users.has_previous %}
+			<a href="?page=1&item=user&search_string={{search_string}}&blocked={{blocked}}">&laquo; first</a>
+			<a href="?page={{ users.previous_page_number }}&item=user&search_string={{search_string}}&blocked={{blocked}}">previous</a>
+		{% endif %}
+
+		<span class="current-page">
+			Page {{ users.number }} of {{ users.paginator.num_pages }}.
+		</span>
+
+		{% if users.has_next %}
+			<a href="?page={{ users.next_page_number }}&item=user&search_string={{search_string}}&blocked={{blocked}}">next</a>
+			<a href="?page={{ users.paginator.num_pages }}&item=user&search_string={{search_string}}&blocked={{blocked}}">last &raquo;</a>
+		{% endif %}
+	</span>
 </div>
 </div>
 {% endblock page-content %}

@@ -1,7 +1,12 @@
+
+from collections import defaultdict
+from itertools import count
+import json
+from django.http import JsonResponse
 from django.shortcuts import render,redirect
 from urllib3 import HTTPResponse
-from customer.models import User
-from store.models import Cart,Category,Order
+from customer.models import User,Wallet
+from store.models import Cart,Category,Order,Coupon
 from store.models import Product,Category,Images,Size
 from django.contrib.auth import authenticate,login,logout
 from django.contrib import messages
@@ -10,9 +15,22 @@ from django.db.models import F
 from django.db.models import Q
 import pytz
 from datetime import datetime
+from django.core.paginator import Paginator
+from django.db.models import Sum,Count
+from datetime import datetime
 
 
 
+###############
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle,Paragraph
+from io import BytesIO
+
+###########
 
 ## Admin login required Decorator###########
 def admin_login_required(view_func, redirect_url="admin_signin"):
@@ -31,7 +49,18 @@ def admin_login_required(view_func, redirect_url="admin_signin"):
 @admin_login_required
 def adminHome(request): 
     admin = request.user
-    context = {'admin':admin}
+    orders = Order.objects.all()
+    total_sale = sum([order.total for order in orders])
+    low_items = Product.objects.filter(product_stock_amount__lt=15, is_deleted = False).order_by('product_stock_amount')[:3]
+    low_items = low_items.annotate(total_sale = Sum('cart__quantity'))
+
+    context = {
+        'admin':admin,
+        'total_sale':total_sale,
+        'low_items': low_items,
+        'order':orders
+
+    }
     return render(request,"admin.html",context=context)
     
 
@@ -59,18 +88,25 @@ def signout(request):
 
 @admin_login_required
 def inventory(request):
+    product =  Product.objects.filter(is_deleted = False).order_by('-updated_at')
+    paged_product = Paginator(product, 7) 
+    page_number = request.GET.get('page')
+    product = paged_product.get_page(page_number)
     context = {
-        'products':Product.objects.filter(is_deleted = False).order_by('-updated_at'),
-        'admin':User.objects.get(email=request.user.email)
+        'products':product,  
     }
     return render(request,'inventory.html',context=context)
 
 @admin_login_required
 def editproduct(request,id):
+    product = Product.objects.get(id = id)
+    images = Images.objects.filter(product = product)
+    print(images)
     context = {
-        'product' : Product.objects.get(id = id),
+        'product' : product ,
         'categories': Category.objects.all().exclude(id = Product.objects.get(id = id).product_category.id ),
-        'sizes' : Size.objects.all().exclude(id = Product.objects.get(id = id).product_size.id)
+        'sizes' : Size.objects.all().exclude(id = Product.objects.get(id = id).product_size.id),
+        'images' : images,
     }  
     return render(request,'editproduct.html',context)
 
@@ -108,9 +144,9 @@ def additem(request,id = None):
                 product.product_size = product_size
             product.product_available = product_available
             product.save()
-            if images:
-                image = Images.objects.filter(product = id)
-                image.delete()
+            # if images:
+            #     image = Images.objects.filter(product = id)
+            #     image.delete()
             for image in images:
                     image = Images.objects.create(product=product,image = image) 
         else:
@@ -139,6 +175,15 @@ def deleteitem(request,id):
     product.is_deleted=True
     product.save()
     return redirect('inventory')
+
+def delete_image(request,id):
+    image = Images.objects.get(id = id)
+    image.delete()
+    data = {
+        'message': f'Photo with ID {id} deleted successfully',
+    }
+    return JsonResponse(data)
+
 ############## Add Category ##########################
 
 @admin_login_required
@@ -167,6 +212,9 @@ def addcategory(request,id = None):
     else:
         categories = Category.objects.filter(is_deleted = False).order_by('-updated_at')
         categories = categories.annotate(total = F('id')*1)
+        paginator = Paginator(categories, 7)
+        page_number = request.GET.get('page')
+        categories = paginator.get_page(page_number)
         for item in categories:
             total = Product.objects.filter(product_category = item.id).count()
             item.total = total
@@ -210,6 +258,9 @@ def addsize(request,id=None):
     else:
         size = Size.objects.filter(is_deleted = False).order_by('updated_at')
         size = size.annotate(total = F('id')*1)
+        paginator = Paginator(size, 7) # 10 objects per page
+        page_number = request.GET.get('page')
+        size = paginator.get_page(page_number)
         for item in size:
             count = Product.objects.filter(product_size = item).count()
             item.total = count
@@ -224,25 +275,30 @@ def deletesize(request,id):
     size.is_deleted = True
     size.save()
     return redirect('addsize')
+
 ############## User Profiles at admin side #############
 
 @admin_login_required
 def users(request):
-    users = User.objects.all().order_by('updated_at')
-    admin = request.user
+    users = User.objects.filter(blocked = False,is_deleted = False).exclude(is_superuser = True).order_by('-updated_at')
+    paginator = Paginator(users, 7) # 10 objects per page
+    page_number = request.GET.get('page')
+    users = paginator.get_page(page_number)
     context = {
         'users' : users,
-        'admin': admin,
+        'blocked':False,
     }
     return render(request,'users.html',context=context)
 
 @admin_login_required
 def blocked_users(request):
-    users = User.objects.filter(blocked = True).order_by('email')
-    admin = request.user
+    users = User.objects.filter(blocked = True).order_by('-updated_at')
+    paginator = Paginator(users, 7) # 10 objects per page
+    page_number = request.GET.get('page')
+    users = paginator.get_page(page_number)
     context = {
         'users' : users,
-        'admin': admin,
+        'blocked':True,
     }
     return render(request,'users.html',context=context)
 
@@ -272,7 +328,8 @@ def user_update(request,id):
 @admin_login_required
 def delete_profile(request,id):
     user = User.objects.get(id = int(id))
-    user.delete()
+    user.is_deleted = True
+    user.save()
     return redirect('users')
 
 @admin_login_required
@@ -289,19 +346,31 @@ def unblock_user(request,id):
     user.save()
     return redirect('users')
 
+###### orders management at admin side ###############################
+
 @admin_login_required
 def show_orders(request):
+    orders = Order.objects.filter(order_processed = False).order_by('-order_created')
+    paged_orders = Paginator(orders, 7) 
+    page_number = request.GET.get('page')
+    order = paged_orders.get_page(page_number)
     context = {
-        'orders' : Order.objects.filter(order_processed = False).order_by('order_created'),
-        'admin':request.user
+        'orders' : order,
+        'admin':request.user,
+        'order_processed': False, 
     }
     return render(request,'orders.html',context=context)
 
 @admin_login_required
 def all_orders(request):
+    orders = Order.objects.filter(order_processed = True).order_by('-order_created')
+    paged_orders = Paginator(orders, 7) 
+    page_number = request.GET.get('page')
+    order = paged_orders.get_page(page_number)
     context = {
-        'orders' : Order.objects.all(),
-        'admin':request.user
+        'orders' : order,
+        'admin':request.user,
+        'order_processed': True, 
     }
     return render(request,'orders.html',context=context)
 
@@ -312,58 +381,276 @@ def manage_order(request,id):
         'cart' : order.cart.all(),
         'address': order.delivery_address,
         'user':User.objects.get(id = order.user.id),
-        'order_id':id
+        'order_id':id,
+        'order' : order,
+
     }
     return render(request,'order_detailes.html',context=context)
 
 @admin_login_required
 def accept_order(request,id):
     order = Order.objects.get(id = id)
+    if int( order.status) > 3:
+        cart = order.cart.all()
+        order.order_processed = True
+        order.save()
+        for item in cart:
+            item.status = "accepted"
+            item.save()
+        order.status = str(int(order.status)+1)
+        order.save()
+        return redirect('show_orders')
+    order.status = str(int(order.status)+1)
+    order.save()
+    print(order.order_processed)
+    print(order.status)
+    return redirect('manage_order',id)
+
+@admin_login_required
+def update_order_status(request,id):
+    order = Order.objects.get(id = id)
+    order.status = '1'
+    order.save()
+    print(order.status)
+    print(order.get_status_display())
+    return redirect('manage_order',id)
+
+@admin_login_required
+def cancel_order(request,order_id):
+    order = Order.objects.get(id = order_id)
+    if order.payment_details.payment_type != 'cod':
+        wallet = Wallet.objects.create(user = order.user,amount = order.total)
+        wallet = Wallet.objects.create(user = request.user,amount = -1 * order.total)
     order.order_processed = True
     order.save()
-    cart = order.cart.all()
-    for item in cart:
-        item.status = "accepted"
-        item.save()
     return redirect('show_orders')
+
+############ serach admin side #####################
 
 @admin_login_required
 def adminside_search(request):
     if request.method == 'POST':
-        search_string = request.POST['search_string'] 
+        search_string = request.POST.get('search_string') 
         item = request.POST['item']
-        if item == 'product':
-            context = {
-                'products': Product.objects.filter(product_name__icontains = search_string),
-                'admin':User.objects.get(email=request.user.email)
-            }
-            return render(request,'inventory.html',context)
-        if item == 'category':
-            print(item)
-            categories = Category.objects.filter(category_name__icontains = search_string)
-            categories = categories.annotate(total = F('id')*1)
-            for item in categories:
-                total = Product.objects.filter(product_category = item.id).count()
-                item.total = total
-            context = {
-                'categories':categories
-            }
-            return render(request,'categories.html',context)
-        if item == 'size':
-            size = Size.objects.filter(size_type__icontains = search_string)
-            size = size.annotate(total = F('id')*1)
-            for item in size:
-                count = Product.objects.filter(product_size = item).count()
-                item.total = count
-            context = {
-                'size':size,
-            }
-            return render(request,'size.html',context)
-        if item == 'user':
-            users = User.objects.filter(Q(first_name__icontains = search_string) |  Q(email__icontains = search_string)).order_by('email')
-        admin = request.user
+        order_processed = request.POST.get('order_processed')
+        blocked = request.POST.get('blocked')
+    else:
+        search_string = request.GET.get('search_string') 
+        item = request.GET.get('item')
+        order_processed = request.GET.get('order_processed')
+        blocked = request.POST.get('blocked')
+
+    if item == 'product':
+        product = Product.objects.filter(product_name__icontains = search_string,is_deletd = False).order_by('-updated_at')
+        paged_product = Paginator(product, 7) 
+        page_number = request.GET.get('page')
+        product = paged_product.get_page(page_number)
+       
+        context = {
+            'products': product,
+            'search_string':search_string,
+        }
+        return render(request,'inventory.html',context)
+    if item == 'category':
+        categories = Category.objects.filter(category_name__icontains = search_string,is_deletd = False).order_by('-updated_at')
+        categories = categories.annotate(total = F('id')*1)
+        paged_product = Paginator(categories, 7) 
+        page_number = request.GET.get('page')
+        categories = paged_product.get_page(page_number)
+        for item in categories:
+            total = Product.objects.filter(product_category = item.id).count()
+            item.total = total
+        context = {
+            'categories':categories,
+            'search_string':search_string,
+        }
+        return render(request,'categories.html',context)
+    if item == 'size':
+        size = Size.objects.filter(size_type__icontains = search_string,is_deletd = False)
+        size = size.annotate(total = F('id')*1)
+        paged_product = Paginator(size, 2) 
+        page_number = request.GET.get('page')
+        size = paged_product.get_page(page_number)
+        for item in size:
+            count = Product.objects.filter(product_size = item).count()
+            item.total = count
+        context = {
+            'size':size,
+            'search_string':search_string,
+        }
+        return render(request,'size.html',context)
+    if item == 'user':
+        users = User.objects.filter(Q(first_name__icontains = search_string) |  Q(email__icontains = search_string),is_deleted = False,blocked=blocked,is_superuser = False).order_by('-updated_at')
+        paginator = Paginator(users, 7) # 10 objects per page
+        page_number = request.GET.get('page')
+        users = paginator.get_page(page_number)
         context = {
             'users' : users,
-            'admin': admin,
+            'search_string':search_string,
+            'blocked':blocked,
         }
         return render(request,'users.html',context=context)
+
+    if item == 'coupon':
+        coupon = Coupon.objects.filter(name__icontains = search_string, is_deleted = False)
+        paginator = Paginator(coupon, 7) # 10 objects per page
+        page_number = request.GET.get('page')
+        coupon = paginator.get_page(page_number)
+        context = {
+            'coupon' : coupon,
+        }
+        return render(request,'coupons.html',context=context)
+    if item == 'order':
+        orders = Order.objects.filter(Q(id__icontains = search_string) |  Q(payment_details__payment_type__icontains = search_string) | Q(order_modified__icontains = search_string),order_processed = order_processed).order_by('-order_created')
+        paged_orders = Paginator(orders, 7) 
+        page_number = request.GET.get('page')
+        order = paged_orders.get_page(page_number)
+        context = {
+            'orders' : order,
+            'search_string':search_string,
+            'order_processed':order_processed
+        }
+        return render(request,'orders.html',context=context)
+    
+
+
+
+########## Coupon ##################
+
+@admin_login_required
+def coupons(request):
+    if request.method == 'POST':
+        coupon_string = request.POST['coupon']
+        discount = request.POST['discount']
+        if not Coupon.objects.filter(name = coupon_string,is_deleted = False).exists():
+            new_coupon = Coupon.objects.create(name = coupon_string,discount = discount)
+            response = {
+                'done':True,
+                'id':new_coupon.id,
+            }
+        else:
+             response = {
+                'done':False,
+                'message':"Coupon string alredy exists"
+            }
+        return JsonResponse(response)
+    else:
+        coupon = Coupon.objects.filter(is_deleted = False).order_by('created_at')
+        paginator = Paginator(coupon, 7) # 10 objects per page
+        page_number = request.GET.get('page')
+        coupon = paginator.get_page(page_number)
+        context = {
+            'coupon' : coupon,
+
+        }
+        return render(request,'coupons.html',context)
+
+@admin_login_required
+def edit_coupon(request):
+    if request.method == 'POST':
+        id = request.POST['coupon_id']
+        coupon_string = request.POST['coupon']
+        discount = request.POST['discount']
+        coupon = Coupon.objects.get(id = id)
+        response = dict
+        if not Coupon.objects.filter(name = coupon_string,is_deleted = False).exists() and coupon_string.strip():
+            coupon.name = coupon_string
+            coupon.discount = discount
+            coupon.save()
+            response = {
+                'message':'Coupon Updated',
+                'done':True,
+            }
+        else:
+            coupon.discount = discount
+            coupon.save()
+            response = {
+                'message':'Coupon code cannot be applied, check if it already exists or empty',
+                'done':False,
+            }
+        return JsonResponse(response)
+
+@admin_login_required
+def delete_coupon(request):
+    if request.method == 'POST':
+        id = request.POST['coupon_id']
+        coupon = Coupon.objects.get(id = id)
+        coupon.is_deleted = True
+        coupon.save()
+        response = {
+            'done':True,
+        }
+        return JsonResponse(response)
+
+
+@admin_login_required
+def product_sale_status(request):
+    data = json.loads(request.body)
+    product_counts = Cart.objects.filter(
+        Q(updated_at__gte = data['startdate']) & 
+        Q(updated_at__lte = data['enddate'])
+        ,purchased = True).annotate(total_quantity=Sum('quantity')).distinct()
+    product_counts = list(product_counts.values_list('product__product_name', 'total_quantity'))
+    product_count = {}
+    for item in product_counts:
+        key, value = item   
+        if key in product_count:
+            product_count[key] += value      
+        else:
+            product_count[key] = value
+    return JsonResponse(product_count)
+
+
+@admin_login_required
+def sales_report(request):
+    orders = Paginator(Order.objects.all().exclude(status = 0),10)
+    page_number = request.GET.get('page')
+    order = orders.get_page(page_number)
+    context = {
+        'order' : Order.objects.all().exclude(status = 0),
+    }
+    return render(request,'sales_table.html',context)
+
+
+@admin_login_required
+def payment_chart(request):
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        print(start_date)
+        print(end_date)
+        payment_type_count = Order.objects.filter(
+            Q(order_created__lte = end_date) & Q(order_created__gte = start_date)
+        ).values('payment_details__payment_type').annotate(count=Count('payment_details__payment_type'))
+        payment_type_count = {item['payment_details__payment_type']:item['count'] for item in payment_type_count}
+        list1 = {'cod':25,'upi':15}
+        list2 = [25,15]
+        data = {
+            'list1': payment_type_count,
+        }
+        return JsonResponse(data)
+    context = {
+        'list1':['cod','upi'],
+        'list2' : [25,15],
+    }
+    return render(request,'payment_reports.html',context)
+
+
+@admin_login_required
+def category_sale(request):
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    category = defaultdict(int)
+    orders = Order.objects.filter(
+        Q(order_created__lte = end_date ) & 
+        Q(order_created__gte = start_date),
+        order_processed = True
+    )
+    for order in orders:
+        cart = order.cart.all()
+        for item in cart:
+            category[item.product.product_category.category_name] += item.total
+    print(category)
+    return JsonResponse(category)
+
+

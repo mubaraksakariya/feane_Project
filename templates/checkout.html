@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block page-content %}
+{% load static %}
 <style>
 #addForm{
     display: none;
@@ -120,7 +121,28 @@
                         {% endfor %}
                         <div class="d-flex justify-content-end">
                             <span class="px-2">Total </span>
-                            <p  class="px-2">= Rs {{total}}</p>
+                            <p class="px-2">= Rs {{total}}</p>
+                            <input type="text" id = "total" value = "{{total}}" hidden>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <p class="px-2" id="d-total"></p>
+                        </div>
+                        
+                        <div class="d-flex">
+                            <label for="coupon"> Coupon</label>
+                            <input class="w-50 mx-2" id="coupon-string" type="text">
+                            <button class="btn btn-warning btn-sm mx-2" onclick="check_coupon()">Apply</button>
+                        </div>
+                        <div class="float-end text-warning">
+                            <span id="message"></span>
+                        </div>
+                        <div class="py-3">
+                            <label for="coupon"> Your Wallet Balance : {{request.user.wallet_balance}}</label>
+                            <div>
+                                <input type="checkbox" id = "wallet-balance" value = '{{request.user.wallet_balance}}'>
+                                <label for="credit_card">Use wallet</label>
+                            </div>
+                            
                         </div>
                         
                     </div>
@@ -136,16 +158,19 @@
                             <label for="bitcoin">COD</label>
                         </div>
                         <div>
-                            <input type="radio" name="payment_method" value="credit_card">
-                            <label for="credit_card">Pay Now</label>
+                            <input type="radio" name="payment_method" value="razor pay">
+                            <label for="credit_card">Pay With Razor Pay</label>
                         </div>
+                        <input type="radio" id = "wallet_radio" name="payment_method" value="wallet">
                     </div>   
                 </div>
                 <div class=" p-4" >
                     <form  action="{% url 'placeOrder' %}" method="POST" class=" d-flex justify-content-center text-center" id="placeorder">
                         {% csrf_token %}
+                        <input type="text" name="coupon" id="coupon" hidden>
                         <input type="text" name="address" id="address" hidden>
-                        <input type="text" name="payment" id="payment" hidden>
+                        <input type="text" name="payment" id="payment" hidden>  
+                        <input type="text" name="wallet-amount" id="wallet-amount" value = "0" hidden>
                         <button class="btn btn-success w-100 btn-lg" type="submit">Place Order</button>
                     </form>
                     {% for message in messages %}
@@ -156,6 +181,10 @@
         </div>      
     </div>    
 </div>
+{% block scripts %}
+    <script src="{% static 'js/walletcheck.js' %}"></script>
+{% endblock scripts %}
+
 <script>
     var form = document.getElementById('addForm')
     var btnshow = document.getElementById('show')
@@ -190,7 +219,48 @@
                 break;
             }
         }
+        document.getElementById('coupon').value = document.getElementById('coupon-string').value
         Paymentform.submit()
     });
+
+    function check_coupon(){
+        var coupon_string = document.getElementById('coupon-string').value
+        document.getElementById('message').innerHTML = ""
+        $.ajax({
+            url: '{% url 'check_coupon' %}',
+            type: 'POST',
+            data: {
+                'coupon_string': coupon_string,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include the CSRF token
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Handle the response data
+                var paymenent_radio = document.getElementsByName('payment_method');
+                if(response.exist == true){
+                    console.log(response.total);
+                    document.getElementById('d-total').innerHTML ="Discounted total after coupon = Rs " + response.total;
+                    document.getElementById('total').value = response.total
+                    document.getElementById('wallet-balance').checked = false
+                    for (let i = 0; i < paymenent_radio.length-1; i++) {
+                        paymenent_radio[i].disabled = false;
+                        if (i==0)
+                        paymenent_radio[i].checked = true
+                    }
+                    document.getElementById('wallet-amount').value = 0
+                }
+                else{
+                    document.getElementById('message').innerHTML = "Coupon not applicable"
+                }
+                
+            },
+            error: function(xhr, status, error) {
+                // Handle any errors
+                console.error(error);
+            }
+        });
+        
+    }
 </script>
+
 {% endblock %}
