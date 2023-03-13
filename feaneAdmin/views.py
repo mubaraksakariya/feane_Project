@@ -5,7 +5,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render,redirect
 from urllib3 import HTTPResponse
-from customer.models import User,Wallet
+from customer.models import User,Wallet,Message
 from store.models import Cart,Category,Order,Coupon
 from store.models import Product,Category,Images,Size
 from django.contrib.auth import authenticate,login,logout
@@ -422,8 +422,36 @@ def cancel_order(request,order_id):
         wallet = Wallet.objects.create(user = order.user,amount = order.total)
         wallet = Wallet.objects.create(user = request.user,amount = -1 * order.total)
     order.order_processed = True
+    order.status = '6'
     order.save()
-    return redirect('show_orders')
+    return redirect('all_orders')
+
+@admin_login_required
+def refuse_order(request):
+    if request.method == 'POST':
+        order_id = request.POST['order_id']
+        message = request.POST['message']
+        heading = request.POST['heading']
+        order = Order.objects.get(id = order_id)
+        user = order.user
+        order.status = '7'
+        order.order_processed = True
+        
+        message = Message.objects.create(
+            user = user,
+            heading = heading,
+            text = message,
+            sender = request.user
+        )
+        waller_entry = Wallet.objects.create(
+            user = user,
+            transaction_type = '5',
+            amount = order.amount_to_pay,
+            order = order,
+        )
+        order.save()
+    return redirect('manage_order',order_id)
+
 
 ############ serach admin side #####################
 
@@ -512,8 +540,6 @@ def adminside_search(request):
         }
         return render(request,'orders.html',context=context)
     
-
-
 
 ########## Coupon ##################
 

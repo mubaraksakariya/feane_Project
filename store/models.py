@@ -1,7 +1,6 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from customer.models import User,Wallet
 import pytz
 
 # Create your models here.
@@ -38,12 +37,9 @@ class Category(models.Model):
     is_deleted = models.BooleanField(_(""),default=False)
     updated_at = models.DateTimeField(auto_now=True)
 
-
 class Images(models.Model):
     product = models.ForeignKey("Product", verbose_name=_(""), on_delete=models.CASCADE)
     image = models.ImageField(_(""), upload_to='image_uploads',default='blank_img.jpg')
-    
-
 
 class Cart(models.Model):
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
@@ -59,15 +55,15 @@ class Cart(models.Model):
     
 class Order(models.Model):
     STATUS_CHOICES = (
+        ('0', 'Requested for Cancel'),
         ('1', 'Waiting to accept order'),
         ('2', 'Order is being Prepared'),
         ('3', 'Ready to Ship'),
         ('4', 'Out for delivery'),
         ('5', 'Done'),
-        ('0', 'Requested for Cancel'),
-
+        ('6', 'Cancelled'),
+        ('7', 'Order Refused'),
     )
-
 
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
     cart = models.ManyToManyField("Cart", verbose_name=_(""),related_name='cart')
@@ -115,16 +111,11 @@ class Coupon(models.Model):
     created_at = models.DateTimeField(_(""), auto_now=False, auto_now_add=True)
     is_deleted = models.BooleanField(_(""),default=False)
 
-
-
-
 class Payment(models.Model):
     user = models.ForeignKey("customer.User", verbose_name=_(""), on_delete=models.CASCADE)
     payment_type = models.CharField(_(""), max_length=50,null=True)
     payment_id = models.CharField(_(""), max_length=50,null=True)
     wallet_transaction = models.ForeignKey("customer.Wallet", verbose_name=_(""), on_delete=models.CASCADE,null=True)
     date = models.DateField(_(""), auto_now=True, auto_now_add=False)
-
-
 
 

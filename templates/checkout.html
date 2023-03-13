@@ -161,7 +161,7 @@
                             <input type="radio" name="payment_method" value="razor pay">
                             <label for="credit_card">Pay With Razor Pay</label>
                         </div>
-                        <input type="radio" id = "wallet_radio" name="payment_method" value="wallet">
+                        <input type="radio" id = "wallet_radio" name="payment_method" value="wallet" hidden>
                     </div>   
                 </div>
                 <div class=" p-4" >
@@ -239,7 +239,7 @@
                 var paymenent_radio = document.getElementsByName('payment_method');
                 if(response.exist == true){
                     console.log(response.total);
-                    document.getElementById('d-total').innerHTML ="Discounted total after coupon = Rs " + response.total;
+                    document.getElementById('d-total').innerHTML ="Total after coupon = Rs " + response.total;
                     document.getElementById('total').value = response.total
                     document.getElementById('wallet-balance').checked = false
                     for (let i = 0; i < paymenent_radio.length-1; i++) {

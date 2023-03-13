@@ -21,13 +21,14 @@ def store(request,id=None):
     cat = request.GET.get('item')
     if id is not None:
         category = Category.objects.get(id = id)
-        products = Product.objects.filter(is_deleted = False,product_category = category)
+        products = Product.objects.filter(is_deleted = False,product_category = category).order_by('-updated_at')
         cat = id
     elif cat is not None and cat !='None':
         category = Category.objects.get(id = cat)
-        products = Product.objects.filter(is_deleted = False,product_category = category)
+        products = Product.objects.filter(is_deleted = False,product_category = category).order_by('-updated_at')
     else:  
-        products = Product.objects.filter(is_deleted = False)
+        products = Product.objects.filter(is_deleted = False).order_by('-updated_at')
+        
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     paginator = Paginator(products, 6)
     page_number = request.GET.get('page')
@@ -49,7 +50,7 @@ def search(request):
         search_term =  request.GET.get('item')
     if search_term is None:
         search_term = ""
-    products = Product.objects.filter(product_name__icontains = search_term)
+    products = Product.objects.filter(product_name__icontains = search_term).order_by('-updated_at')
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     search_pages = Paginator(products, 6)
     page_number = request.GET.get('page')
@@ -333,7 +334,6 @@ def payment_callback(request,id):
         return redirect('checkout')
 
 
-
 ####### Order section #####################
 
 @login_required(login_url='/signin')
@@ -408,7 +408,7 @@ def cart_count_change(request):
 
 @login_required(login_url='/signin')
 def wallet(request):
-    wallet_page = Paginator(Wallet.objects.filter(user = request.user),10)
+    wallet_page = Paginator(Wallet.objects.filter(user = request.user).order_by('-transaction_date'),10)
     page_number = request.GET.get('page')
     wallet = wallet_page.get_page(page_number)
     context = {

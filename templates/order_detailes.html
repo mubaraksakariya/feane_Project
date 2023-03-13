@@ -1,4 +1,15 @@
 {% extends 'adminbase.html' %}
+{% block styles %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+    .hidden {
+        display:none;
+    }
+    .formButton{
+        display:0;
+    }
+</style>
+{% endblock %}
 {% block page-content  %}
 
 <div class="container ">
@@ -19,30 +30,29 @@
             <td>{{ items.product.product_name }}</td>
             <td>{{ items.quantity }}</td>
             <td>{{ order_id }}</td>
-            <!-- <td>
-                <div class="">
-                    <a href=""><button class="btn btn-outline-danger" type="button">Delete</button></a>
-                </div>
-            </td> -->
-
+            
           </tr>
           {% endfor %}
         </tbody>
     </table>
-    <div class=''>
-        {% if order.status == '1' %}
-        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Accept</button></a>
-        {% elif order.status == '2' %}
-        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Prepared</button></a>
-        {% elif order.status == '3' %}
-        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Packed</button></a>
-        {% elif order.status == '4' %}
-        <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Delivered</button></a>
-        {% elif order.status == '0' %}
-        <a href="{% url 'cancel_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Confirm Cancel Request</button></a>
-        {% else %}
-        <a href="{% url 'all_orders' %}"><button class="btn btn-lg btn-outline-success" type="button">Back</button></a>
-        {% endif %}
+    <div class='d-flex justify-content-between'>
+        <div>
+            {% if order.status == '1' %}
+            <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Accept</button></a>
+            {% elif order.status == '2' %}
+            <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Prepared</button></a>
+            {% elif order.status == '3' %}
+            <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Packed</button></a>
+            {% elif order.status == '4' %}
+            <a href="{% url 'accept_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Delivered</button></a>
+            {% elif order.status == '0' %}
+            <a href="{% url 'cancel_order' order_id %}"><button class="btn btn-lg btn-outline-success" type="button">Confirm Cancel Request</button></a>
+            {% else %}
+            <a href="{% url 'all_orders' %}"><button class="btn btn-lg btn-outline-success" type="button">Back</button></a>
+            {% endif %}
+            
+        </div>
+        
     </div>  
     <div class="row justify-content-center align-items-center g-2 text-white">
         <div class="col-md-6 d-flex justify-content-center ">
@@ -75,8 +85,50 @@
         </div>
        
     </div>
-
+    {% if not order.status == '7'  %}
+    <div class="row justify-content-center align-content-center">
+        <div class="col">
+            <div class="">
+                <button onclick="toggler()" class="btn btn-outline-warning formButton" id="formButton" type="button">Refuse this order</button>
+            </div>
+            <form id="form1" action="{% url 'refuse_order' %}" method="post" class="hidden p-5">
+                {% csrf_token %}
+                <input type="text" name="order_id" id="" value="{{order.id}}" hidden>
+                <label for="exampleFormControlTextarea1" class="text-info">Message to user *</label>
+                <div class="form-group">
+                    <label for="exampleFormControlTextarea1" class="text-white">Heading *</label>
+                    <input type="text" name="heading" id="" required> 
+                </div>
+                <div class="form-group">
+                    <label for="exampleFormControlTextarea1" class="text-white">Message *</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="message" required></textarea>
+                </div>   
+                <div class="form-group">
+                    <button class="btn btn-outline-danger px-3 me-2" type="submit"> Done </button>
+                    <button onclick="toggler()" class="btn btn-outline-success formButton" id="formButton" type="button">Cancel</button>
+                </div>               
+            </form>
+        </div>
+        <div class="col"></div>
+        <div class="col"></div>
+    </div>
+    {% endif %}
+    
 </div>
 
+{% block scripts %}
 
+<script>
+    const toggleFormButton = document.querySelector('.formButton');
+    const myForm = document.querySelector('#form1');
+
+    function toggler(){
+        myForm.classList.toggle('hidden');
+        toggleFormButton.classList.toggle('hidden');
+        myForm.reset()
+        console.log("asd");
+    };
+</script>
+
+{% endblock %}
 {% endblock  %}

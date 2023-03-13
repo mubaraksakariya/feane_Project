@@ -35,6 +35,7 @@ urlpatterns = [
     path('cancel_order/<order_id>',views.cancel_order,name='cancel_order'),
 
     path('update_order_status/<id>',views.update_order_status,name='update_order_status'),
+    path('refuse_order',views.refuse_order,name='refuse_order'),
    
 
     path('adminside_search',views.adminside_search,name='adminside_search'),

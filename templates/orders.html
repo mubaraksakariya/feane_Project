@@ -58,12 +58,8 @@
             <td>{{ items.get_status_display }}</td>
             <td>
               <div class="">
-                {% if not items.order_processed %}
-                  <a href="{% url 'manage_order' items.id %}"><button class="btn btn-outline-success" type="button">View</button></a>
-                  <a href=""><button class="btn btn-outline-danger" type="button">Delete</button></a>
-                {% else %}
                 <a href="{% url 'manage_order' items.id %}"><button class="btn btn-outline-success" type="button">View</button></a>
-                {% endif %}
+                
               </div>
             </td>
 

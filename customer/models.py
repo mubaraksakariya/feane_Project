@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils.translation import gettext_lazy as _
+from store.models import Cart
 
 # Custom USER models here. email and password for authentication
 ###########################################
@@ -61,7 +62,17 @@ class User(AbstractUser):
             return balance
         else:
             return 0
-        
+    
+    @property
+    def cart_count(self):
+        cart_count = Cart.objects.filter(user = self,purchased = False).count()
+        return cart_count
+
+    @property
+    def messages(self):
+        mess = Message.objects.filter(user = self,is_deleted = False,is_read = False)
+        return mess
+   
 
 class Address(models.Model):
     user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE)
@@ -81,12 +92,23 @@ class Wallet(models.Model):
         ('2', 'Deposit'),
         ('3', 'Payment'),
         ('4', 'Others'),
+        ('5', 'Order refusal')
     )
     user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE)
     transaction_date = models.DateTimeField(_(""), auto_now=False, auto_now_add=True)
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_CHOICES,default='1')
+    order = models.ForeignKey("store.Order", verbose_name=_(""), on_delete=models.CASCADE,null=True)
     amount = models.FloatField(_(""),default= 0)
 
-
-
+class Message(models.Model):
+    def get_default_user():
+        return 
+    user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE,related_name="recieved")
+    heading = models.TextField(_(""))
+    text = models.TextField(_(""))
+    sender = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE,default=get_default_user)
+    created_at = models.DateTimeField(_(""), auto_now=False, auto_now_add=True)
+    modified_at = models.DateTimeField(_(""), auto_now=True, auto_now_add=False)
+    is_read = models.BooleanField(_(""),default=False)
+    is_deleted = models.BooleanField(_(""),default= False)
 

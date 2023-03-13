@@ -4,13 +4,13 @@ from django.contrib import messages
 from twilio.rest import Client
 import vonage
 from .models import User,Address
-from store.models import Order
-from store.models import Product
+from store.models import Order, Product
 import random
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
+from .models import Message
 
 OTP = 123
 # Create your views here.
@@ -244,3 +244,35 @@ def updateAddress(request,id):
             'address':Address.objects.get(id = id),
         }
         return render(request,'addressUpdate.html',context)
+
+
+######## Messages ###############################
+
+@login_required(login_url='signin')
+def message_read(request):
+    if request.method == "POST":
+        message = Message.objects.filter(user = request.user, is_read = False, is_deleted = False)
+        for item in message:
+            item.is_read = True
+            item.save()
+            print(item.text)
+        return JsonResponse({"status": "success"})
+
+@login_required(login_url='signin')
+def user_messages(request,id = None):
+    if id is None:
+        messages = Message.objects.filter(user = request.user).order_by('-created_at')
+        context = {
+            'messages' : messages,
+        }
+        return render(request,'messages.html',context)
+    else:
+       
+        messages = Message.objects.filter(id = id)
+        context = {
+            'messages' : messages,
+        }
+        return render(request,'messages.html',context)
+
+
+
