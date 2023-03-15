@@ -1,6 +1,21 @@
 {% extends 'base.html' %}
 
 {% block page-content %}
+<style>
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  
+  input[type="number"]::-moz-number-spin-box {
+    display: none;
+  }
+</style>
 <div class="container food_section layout_padding">
     <div class="row">
       <!-- Cart items -->
@@ -23,7 +38,7 @@
                   <div id = "q{{item.id}}">Quantity {{item.quantity}}</div>
                   <div><div class="text-center d-flex">
                     <button class="btn btn-outline-warning py-0" onclick="decrement({{item.id}})">-</button>
-                    <input class="border rounded border-warning py-0 px-0 mx-1 text-center " id='{{item.id}}' type=number min=1 max=5 name = 'quantity' value="{{item.quantity}}" > 
+                    <input class="border rounded border-warning py-0 px-0 mx-1 text-center " id='{{item.id}}' type=number min=1 max= {{item.product.product_stock_amount}} name = 'quantity' value="{{item.quantity}}" > 
                     <button class="btn btn-outline-warning py-0" onclick="increment({{item.id}})">+</button>
                 </div></div>  
               </li>

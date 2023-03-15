@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.utils import timezone
 from .models import Message
+from feaneAdmin.models import Notification
 
 OTP = 123
 # Create your views here.
@@ -255,22 +256,32 @@ def message_read(request):
         for item in message:
             item.is_read = True
             item.save()
-            print(item.text)
+        notification = Notification.objects.filter(is_read = False)
+        for item in notification:
+            item.is_read = True
+            item.save()
         return JsonResponse({"status": "success"})
 
 @login_required(login_url='signin')
-def user_messages(request,id = None):
-    if id is None:
-        messages = Message.objects.filter(user = request.user).order_by('-created_at')
-        context = {
-            'messages' : messages,
-        }
+def user_messages(request,id = None,item = None):
+    if id is not None:
+        if item == 'msg':
+            messages = Message.objects.filter(id = id)
+            context = {
+                'messages' : messages,
+            }
+        if item == 'ntf':
+            messages = Notification.objects.filter(id = id).order_by('-created_at')
+            context = {
+                'notifications' : messages,
+            }
         return render(request,'messages.html',context)
     else:
-       
-        messages = Message.objects.filter(id = id)
+        messages = Message.objects.filter(user = request.user).order_by('-created_at')
+        ntf = Notification.objects.filter(is_deleted = False).order_by('-created_at')
         context = {
             'messages' : messages,
+            'notifications': ntf,
         }
         return render(request,'messages.html',context)
 

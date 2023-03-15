@@ -51,5 +51,7 @@ urlpatterns = [
     path('payment_chart',views.payment_chart,name='payment_chart'),
     path('category_sale',views.category_sale,name='category_sale'),
     
+    path('message_all_users',views.message_all_users,name='message_all_users'),
+
 
 ]

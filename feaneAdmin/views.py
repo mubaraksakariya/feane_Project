@@ -18,7 +18,7 @@ from datetime import datetime
 from django.core.paginator import Paginator
 from django.db.models import Sum,Count
 from datetime import datetime
-
+from .models import Notification
 
 
 ###############
@@ -93,7 +93,8 @@ def inventory(request):
     page_number = request.GET.get('page')
     product = paged_product.get_page(page_number)
     context = {
-        'products':product,  
+        'products':product,
+        'item' : 'product',
     }
     return render(request,'inventory.html',context=context)
 
@@ -219,7 +220,8 @@ def addcategory(request,id = None):
             total = Product.objects.filter(product_category = item.id).count()
             item.total = total
         context = {
-            'categories':categories
+            'categories':categories,
+            'item' : 'category',
         }
         return render(request,'categories.html',context)
 
@@ -266,6 +268,7 @@ def addsize(request,id=None):
             item.total = count
         context = {
             'size':size,
+            'item': 'size',
         }
         return render(request,'size.html',context)
 
@@ -286,7 +289,7 @@ def users(request):
     users = paginator.get_page(page_number)
     context = {
         'users' : users,
-        'blocked':False,
+        'blocked':'False',
     }
     return render(request,'users.html',context=context)
 
@@ -298,7 +301,7 @@ def blocked_users(request):
     users = paginator.get_page(page_number)
     context = {
         'users' : users,
-        'blocked':True,
+        'blocked':'True',
     }
     return render(request,'users.html',context=context)
 
@@ -357,7 +360,7 @@ def show_orders(request):
     context = {
         'orders' : order,
         'admin':request.user,
-        'order_processed': False, 
+        'order_processed': 'False', 
     }
     return render(request,'orders.html',context=context)
 
@@ -370,7 +373,7 @@ def all_orders(request):
     context = {
         'orders' : order,
         'admin':request.user,
-        'order_processed': True, 
+        'order_processed': 'True', 
     }
     return render(request,'orders.html',context=context)
 
@@ -469,7 +472,7 @@ def adminside_search(request):
         blocked = request.POST.get('blocked')
 
     if item == 'product':
-        product = Product.objects.filter(product_name__icontains = search_string,is_deletd = False).order_by('-updated_at')
+        product = Product.objects.filter(product_name__icontains = search_string,is_deleted = False).order_by('-updated_at')
         paged_product = Paginator(product, 7) 
         page_number = request.GET.get('page')
         product = paged_product.get_page(page_number)
@@ -480,7 +483,7 @@ def adminside_search(request):
         }
         return render(request,'inventory.html',context)
     if item == 'category':
-        categories = Category.objects.filter(category_name__icontains = search_string,is_deletd = False).order_by('-updated_at')
+        categories = Category.objects.filter(category_name__icontains = search_string,is_deleted = False).order_by('-updated_at')
         categories = categories.annotate(total = F('id')*1)
         paged_product = Paginator(categories, 7) 
         page_number = request.GET.get('page')
@@ -494,9 +497,9 @@ def adminside_search(request):
         }
         return render(request,'categories.html',context)
     if item == 'size':
-        size = Size.objects.filter(size_type__icontains = search_string,is_deletd = False)
+        size = Size.objects.filter(size_type__icontains = search_string,is_deleted = False)
         size = size.annotate(total = F('id')*1)
-        paged_product = Paginator(size, 2) 
+        paged_product = Paginator(size, 7) 
         page_number = request.GET.get('page')
         size = paged_product.get_page(page_number)
         for item in size:
@@ -520,7 +523,7 @@ def adminside_search(request):
         return render(request,'users.html',context=context)
 
     if item == 'coupon':
-        coupon = Coupon.objects.filter(name__icontains = search_string, is_deleted = False)
+        coupon = Coupon.objects.filter(name__icontains = search_string, is_deleted = False).order_by('-created_at')
         paginator = Paginator(coupon, 7) # 10 objects per page
         page_number = request.GET.get('page')
         coupon = paginator.get_page(page_number)
@@ -561,7 +564,7 @@ def coupons(request):
             }
         return JsonResponse(response)
     else:
-        coupon = Coupon.objects.filter(is_deleted = False).order_by('created_at')
+        coupon = Coupon.objects.filter(is_deleted = False).order_by('-created_at')
         paginator = Paginator(coupon, 7) # 10 objects per page
         page_number = request.GET.get('page')
         coupon = paginator.get_page(page_number)
@@ -608,6 +611,7 @@ def delete_coupon(request):
         }
         return JsonResponse(response)
 
+########## Sales Reports ##############
 
 @admin_login_required
 def product_sale_status(request):
@@ -679,4 +683,18 @@ def category_sale(request):
     print(category)
     return JsonResponse(category)
 
+############## Messages to Users ########################
+
+@admin_login_required
+def message_all_users(request):
+    if request.method == 'POST':
+        heading = request.POST['heading']
+        text = request.POST['text']
+        ntf = Notification.objects.create(heading = heading,text = text)
+        if 'image' in request.FILES:
+            image = request.FILES['image']
+            ntf.image = image    
+        ntf.save()
+        return redirect('users')
+    return render(request,'message_all.html')
 

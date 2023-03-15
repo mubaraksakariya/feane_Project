@@ -21,13 +21,13 @@ def store(request,id=None):
     cat = request.GET.get('item')
     if id is not None:
         category = Category.objects.get(id = id)
-        products = Product.objects.filter(is_deleted = False,product_category = category).order_by('-updated_at')
+        products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
         cat = id
     elif cat is not None and cat !='None':
         category = Category.objects.get(id = cat)
-        products = Product.objects.filter(is_deleted = False,product_category = category).order_by('-updated_at')
+        products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
     else:  
-        products = Product.objects.filter(is_deleted = False).order_by('-updated_at')
+        products = Product.objects.filter(is_deleted = False).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
         
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     paginator = Paginator(products, 6)
@@ -50,7 +50,7 @@ def search(request):
         search_term =  request.GET.get('item')
     if search_term is None:
         search_term = ""
-    products = Product.objects.filter(product_name__icontains = search_term).order_by('-updated_at')
+    products = Product.objects.filter(product_name__icontains = search_term).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
     cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
     search_pages = Paginator(products, 6)
     page_number = request.GET.get('page')

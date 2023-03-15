@@ -67,16 +67,23 @@
               <li class="dropdown btn btn-sm btn-outline-warning rounded-3 mx-2 text-white px-0">
                 <a class="nav-link " href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="message_read()" >
                   <i class="bi bi-envelope-exclamation text-white"></i>
-                  <span class="badge bg-body-tertiary text-dark">{{request.user.messages.count}}</span>
+                  {% with total=request.user.messages.count|add:request.user.notification.count %}
+                  <span class="badge bg-body-tertiary text-dark">{{total}}</span>
+                  {% endwith %}
                 </a>
                 <div class="dropdown-menu bg-dark" aria-labelledby="navbarDropdown">
 
                   {% for item in request.user.messages %}
                     <div class="dropdown-item">
-                      <a class="dropdown-item text-white text-wrap p-4" href="{% url 'user_messages' item.id %}" > {{item.heading}}</a>
+                      <a class="dropdown-item text-white text-wrap p-4" href="{% url 'user_messages' id=item.id item='msg' %}" > {{item.heading}}</a>
                     </div>
                   {% endfor %}
-                  {% if not request.user.messages %}
+                  {% for item in request.user.notification %}
+                    <div class="dropdown-item">
+                      <a class="dropdown-item text-white text-wrap p-4" href="{% url 'user_messages' id=item.id item='ntf' %}" > {{item.heading}}</a>
+                    </div>
+                  {% endfor %}
+                  {% if not request.user.messages and not request.user.notification %}
                     <p class="dropdown-item text-white text-wrap px-4" > No new Notifications </p>
                   {% endif %}
                     <div class="dropdown-item">

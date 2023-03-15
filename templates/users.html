@@ -11,20 +11,21 @@
 			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
 				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
 					<li class="nav-item px-3">
-						<a class="nav-link active text-white" aria-current="page" href="{% url 'users' %}">All users</a>
+						<a class="nav-link active text-white rounded-3" id="users" aria-current="page" href="{% url 'users' %}">All users</a>
 					</li>
 					<li class="nav-item px-3">
-						<a class="nav-link text-white" href="{% url 'blocked_users' %}">Blocked Users</a>
+						<a class="nav-link text-white rounded-3" id="blocked_users" href="{% url 'blocked_users' %}">Blocked Users</a>
 					</li>
-					{% comment %} <li class="nav-item px-3">
-						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
-					</li> {% endcomment %}
+					<li class="nav-item px-3">
+						<a class="nav-link text-white rounded-3" id="message_all_users" href="{% url 'message_all_users' %}">Message to users</a>
+					</li>
+					
 				</ul>
 				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
 					{% csrf_token %}
 					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
 					<input type="text" name="item" value="user" hidden>
-					<input type="text" name="blocked" value="{{blocked}}" hidden>
+					<input type="text" id="blocked" name="blocked" value="{{blocked}}" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>
 			</div>
@@ -88,4 +89,15 @@
 	</span>
 </div>
 </div>
+<script>
+	window.onload = function(){
+	let blocked = document.getElementById('blocked').value
+	  if (blocked == 'True'){
+		document.getElementById('blocked_users').classList.add("bg-dark")
+	  }
+	  else{
+		document.getElementById('users').classList.add("bg-dark")
+	  }
+	}
+  </script>
 {% endblock page-content %}

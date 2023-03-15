@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser,BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from store.models import Cart
+from feaneAdmin.models import Notification
 
 # Custom USER models here. email and password for authentication
 ###########################################
@@ -72,7 +73,15 @@ class User(AbstractUser):
     def messages(self):
         mess = Message.objects.filter(user = self,is_deleted = False,is_read = False)
         return mess
-   
+    
+    @property
+    def notification(self):
+        notifications = Notification.objects.filter(is_read = False, is_deleted = False)
+        for item in notifications:
+            print(item.heading)
+        return notifications
+
+
 
 class Address(models.Model):
     user = models.ForeignKey("User", verbose_name=_(""), on_delete=models.CASCADE)
