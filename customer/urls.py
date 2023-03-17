@@ -14,5 +14,7 @@ urlpatterns = [
     path('deleteAddress/<id>',views.deleteAddress,name='deleteAddress'),
     path('updateAddress/<id>',views.updateAddress,name='updateAddress'),
     
-
+    path('user_messages',views.user_messages,name='user_messages'),
+    path('user_messages/<int:id>/<str:item>',views.user_messages,name='user_messages'),
+    path('message_read',views.message_read,name='message_read'),
 ]

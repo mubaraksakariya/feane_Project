@@ -8,9 +8,6 @@ function addToCart(){
     
     let csrf_token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
 
-    console.log(csrf_token);
-    console.log(quantity);
-
     data = JSON.stringify({'product_id': product_id, 'quantity': quantity})
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/store/addToCart", true);
@@ -19,8 +16,9 @@ function addToCart(){
     xhr.onreadystatechange = function() {      
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             var response = JSON.parse(xhr.responseText); 
-            console.log(response);
+            console.log(response.status);
             document.getElementById('cart_count').innerHTML = response.cart_count
+            console.log(response.cart_count);
         };
     }
     xhr.send(data);

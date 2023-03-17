@@ -9,25 +9,40 @@
           Our Menu
         </h2>
       </div>
-
+      <form action="{% url 'search' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group d-flex justify-content-end">
+          <div class="form-outline">
+            <input name="search-term" type="search" id="form1" class="form-control" placeholder="search"/>
+          </div>
+          <button type="submit" class="btn btn-warning">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </form>
+      
       <ul class="filters_menu">
-        <li class="active" data-filter="*">All</li>
-        <li data-filter=".burger">Burger</li>
-        <li data-filter=".pizza">Pizza</li>
+        <a href="{% url 'store' %}"><li data-filter="*" class="text-dark"   id = "all" >All</li></a>
+        {% for item in category %}
+        <a href="{% url 'store' item.id %}"><li class="text-dark" id="{{item.id}}">{{ item.category_name }}</li></a>
+        {% endfor %}
+        <!-- <li data-filter=".pizza">Pizza</li>
         <li data-filter=".pasta">Pasta</li>
-        <li data-filter=".fries">Fries</li>
+        <li data-filter=".fries">Fries</li> -->
       </ul>
-
+        
       <div class="filters-content">
         <div class="row grid">
-          {% comment %} Boxes of products in home page {% endcomment %}
+          
           {% for product in products %}
           <div class="col-sm-6 col-lg-4 all {{product.product_category.category_name}}">           
             <div class="box">
               <div>
                 <a href="./product/{{product.id}}">
                   <div class="img-box">
-                    <img src={{ product.product_image.image1.url }} alt="">
+                    {% if product.first_image %}
+                      <img src="{{ product.first_image.url}}">
+                    {% endif %}
                   </div>
                 </a>
                 <div class="detail-box">
@@ -37,13 +52,16 @@
                   <p>
                     {{ product.product_text }}
                   </p>
+                  <p>
+                    {{ product.product_size.size_type }}
+                  </p>
                   <div class="options">
                     <h6>
                      Rs {{ product.product_prize }}
                     </h6>
                     <span type="text" id="{{ product.id }}" hidden>{{ product.id }} </span>
                     <form action="">{% csrf_token %}</form>
-                    <button class="rounded-circle bg-warning" onclick="addToCart({{ product.id }})" >
+                    <button class="rounded-circle bg-warning" onclick="addToCart({{ product.id}})" name="tooltip-btn" id = "tooltip{{product.id}}" data-toggle="tooltip" data-placement="bottom" >
                       <img class="" src="{% static 'images/cart-icon.svg' %}" alt="">
                     </button>
                   </div>
@@ -57,18 +75,24 @@
         </div>
       </div>
       <div class="btn-box">
-        <a href="">
-          View More
-        </a>
+        {% if products.has_previous %}
+            <a href="?page={{ products.previous_page_number }}&item={{item}}">prev</a>
+        {% endif %}
+        {% if products.has_next %}
+            <a href="?page={{ products.next_page_number }}&item={{item}}">next</a>
+        {% endif %}
       </div>
     </div>
 </section>
+<input type="text" id="cat_id" name="" value="{{item}}" hidden>
 <script>
 function addToCart(p){
     const product_id = document.getElementById(p).innerHTML
-    console.log(product_id);
     let quantity = 0  
+    console.log(product_id);
     let csrf_token = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+    let btn = document.getElementById("tooltip"+p)
+
     data = JSON.stringify({'product_id': product_id, 'quantity': quantity})
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/store/addToCart", true);
@@ -78,11 +102,48 @@ function addToCart(p){
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             var response = JSON.parse(xhr.responseText); 
             document.getElementById('cart_count').innerHTML = response.cart_count
+            btn.setAttribute("title", "Already added to cart");     
         };
     }
     xhr.send(data);
 }
-  </script>
+
+window.onload = function(){
+  
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", "/store/cartItems", true);
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // xhr.setRequestHeader("X-CSRFToken", csrf_token);
+    xhr.onreadystatechange = function() {      
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText); 
+            const myList = response.myList;
+            myList.forEach(function(item) {
+              tooltip_btns = document.getElementById("tooltip"+item)
+              tooltip_btns.setAttribute("title", "Already added to cart");
+            });
+            
+        };
+    }
+    xhr.send();
+    
+
+  let id = document.getElementById('cat_id').value
+  if (id != "None")
+    document.getElementById(id).classList.add('bg-warning');
+  else
+    document.getElementById('all').classList.add('bg-warning');
+  console.log(id);
+  }
+  
+</script>
+{% block scripts %}
+<script src="{% static 'js/custom.js' %}"></script>
+<script src="{% static 'js/helper.js' %}"></script>
+<script src=" {% static 'js/confirmation.js' %} "></script>
+{% endblock scripts %}
+  
+
   {% endblock page-content %}
   
   <!-- end food section -->

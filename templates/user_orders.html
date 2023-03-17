@@ -1,22 +1,131 @@
 {% extends 'base.html' %}
 {% block page-content %}
-
+<style>
+  .scroll{
+      max-height:calc(50vh);
+      overflow-y: scroll;
+      scrollbar-width: 0px;
+  }
+  .scroll::-webkit-scrollbar {
+      display: none;
+    }
+</style>
 
 <div class="container">
-    <div class="row justify-content-center align-items-center g-2">
-        {% for item in cart %}
-        <div class="col-sm-4">
-            <div class="card" style="width: 18rem;">
-                <img src="{{item.product.product_image.image1.url}}" class="card-img-top" alt="...">
+    <div class="row g-2">
+      <div class="float-start">
+        <h3 class="text-center">Your Orders on the line</h3>
+      
+        {% if cart %}
+          {% if order.status != '0' %}
+          <div class="py-2 float-end ">
+            <a class="btn btn-danger" href="{% url 'cancel_request' id %}">Cancel this order</a>
+          </div>
+          {% else %}
+          <div class="py-2 float-end text-success font-weight-bold">
+            <span>Cancel request Given</span>
+          </div>
+          {% endif %}
+        {% endif %}
+      </div>
+      
+      {% if orders %}
+        
+        <div class="col-sm-5">
+          <h5 class="text-center">Orders</h6>
+          <div class="scroll">
+          
+          {% for item in orders %}
+            <div class="d-flex justify-content-center">
+              <div class="card p-2 m-2" style="width: 18rem;" id="{{item.id}}">
+                <a class=" text-center text-black stretched-link" href="{% url 'cart_in_order' item.id %}">Order id - {{item.id}}</a>
+                <h5 name="{{item.id}}" class="text-center"></h5>
                 <div class="card-body">
                   <p class="card-text">
-                    
+                    Date :{{item.order_date}}
                   </p>
+                  <p class="card-text">
+                    Total :{{item.discounted_total}}
+                  </p>
+                  <p class="card-text">
+                    Payment Type :{{item.payment_details.payment_type}}
+                  </p>
+                  <p class="card-text">
+                   Amount Payed  :Rs {{item.amount_to_pay}}
+                  </p>
+                  <!-- <p class="card-text">
+                    Paymentid:{{item.payment_details.payment_id}}
+                  </p> -->
+                  
                 </div>
               </div>
+            </div>
+          {% endfor %}
         </div>
-        {% endfor %}
+      </div>
+        
+        <div class="col-sm-7">
+          {% if cart %}
+          <div>{{ order.get_status_display }}</div>
+              <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width:{{order.order_progress}}%">
+                </div>
+              </div>
+              
+          <h5 class="text-center">Order Items</h5>
+          <div class="row">
+            {% for item in cart %}
+              <div class="col-lg-6">
+                <div class="box" style="width: 18rem;">
+                  <div class="img-box">
+                    <img src="{{item.product.first_image.url}}" alt="...">
+                  </div>
+                  <div class="detail-box">
+                    <a class="stretched-link text-white" href="{% url 'product' item.product.id %}"><h5 class="card-title">{{ item.product.product_name }}</h5></a>
+                    <div class="d-flex justify-content-between">
+                      <p class="card-text">{{ item.quantity }}</p>
+                      <p>Rs{{ item.product.product_prize }}</p>
+                      <p id = "_id" hidden >{{id}}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}     
+          </div>
+          {% else %}
+        <div class="h-100 d-flex flex-column justify-content-center align-content-center">
+          <p class="text-center text-success">Select an order to View</p> 
+        </div>
+        {% endif %}
+        </div>
+      
+
+
+      {% else %}
+        <div class="col-sm-12 d-flex justify-content-center">
+            <p class="card-text">
+                Looks like you have no Orders 
+            </p>
+        </div>
+      {% endif %}
     </div>
 </div>
 
+
+<script>
+ 
+window.onload = function() {
+  
+  displayed_cart = document.getElementById('_id').innerHTML;
+  
+  const my_div = document.getElementById( displayed_cart);
+  console.log(my_div);
+  my_div.style.boxShadow = '0px 0px 10px rgba(0, 0, 0, 0.5)';
+  my_div.style.backgroundColor = 'rgba(241,242,243)'
+  my_div.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+}
+  // Call the function to activate it
+
+
+</script>
 {% endblock %}

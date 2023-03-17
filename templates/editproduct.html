@@ -1,0 +1,208 @@
+{% extends 'adminbase.html' %}
+    <!-- body section -->
+{% block page-content %}
+<style>
+  .close-button {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  padding: 0px;
+  background-color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  max-height:15px;
+}
+</style>
+<div class="container">
+	<nav class="navbar navbar-expand-lg navbar-light bg-black">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item px-3">
+						<a class="nav-link active text-white" aria-current="page" href="{% url 'inventory' %}">Products</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'addcategory' %}">Categories</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
+					</li>
+				</ul>
+				<!-- <form class="d-flex px-3">
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form> -->
+			</div>
+		</div>
+	</nav>
+</div>
+<div class="container ">
+<div class = "d-flex justify-content-center">
+    <form class=" w-75 p-4" method="post" action="{% url 'additem' 0 %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="text" name="id" value="{{product.id}}" hidden>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Item name</label>
+          <div class="col-sm-10">
+            <input type="text" value="{{product.product_name}}" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_name">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Category</label>
+          <div class="col-sm-10">
+            <select name="category" class="form-select shadow p-1 mb-1 bg-white rounded" aria-label="Default select example">
+              <option selected>{{product.product_category.category_name}}</option>
+              {% for category in categories %}
+              <option value="{{category.id}}"> {{category.category_name}} </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Size</label>
+          <div class="col-sm-10">
+            <select name="size" class="form-select shadow p-1 mb-1 bg-white rounded" aria-label="Default select example">
+              <option selected> {{product.product_size.size_type}} </option>
+              {% for size in sizes %}
+              <option value="{{size.id}}"> {{size.size_type}} </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">Item Count</label>
+          <div class="col-sm-10">
+            <input type="text" value="{{product.product_stock_amount}}" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_stock_amount">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white "> Photos </label>
+          <div class="col-sm-10 ">
+            <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="fileInput" name="images" value="{{images}}" multiple>
+          </div>
+        </div>
+
+        <div class="form-group row "> 
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white"></label>
+          <div id="previewImage" class="col-sm-10 d-flex justify-content-md-start">
+            {% csrf_token %}
+            {% for item in images  %}
+            <div class="position-relative p-2 text-end w-25" id = "{{item.id}}">
+                <img src="{{item.image.url}}" class="img-thumbnail img-fluid" alt="">
+                <a class="close-button rounded-circle" onclick="remove_photo(event,{{item.id}})">X</a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">product prize</label>
+          <div class="col-sm-10">
+            <input type="text" value="{{product.product_prize}}" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_prize">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white ">product description</label>
+          <div class="col-sm-10">
+            <textarea  class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="product_text">{{product.product_text}}</textarea>
+          </div>
+        </div>
+      
+        <div class="form-group row">
+          <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+          <div class="col-sm-10">
+            <button type="submit" class="btn btn-primary">Update</button>
+          </div>
+        </div>
+      </form>
+</div>
+<script>
+  var fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("previewImage");
+  
+  fileInput.addEventListener("change", function() {
+    // preview.innerHTML = "";
+    const files = fileInput.files;
+    for (let i = 0; i < files.length; i++) {
+      
+      const file = files[i];
+      const reader = new FileReader();
+      
+      const div = document.createElement("div");
+      div.className = "position-relative p-2 text-end w-25"
+
+      // image 
+      const img = document.createElement("img");
+      img.className = "img-thumbnail img-fluid"
+      // img.style.maxWidth = "100px";
+      img.id = "img"+i.toString()
+      // img.style.position = "absalute"
+
+      // delete button
+      const btn = document.createElement("button")
+      btn.textContent = "x"
+      btn.className = "close-button rounded-circle"
+      btn.name = i.toString()
+      btn.addEventListener('click', function(e){
+        e.preventDefault()
+        var fileBuffer = new DataTransfer();
+        document.getElementById("img"+this.name).remove()
+        var images = document.getElementById("fileInput").files
+        for (let i = 0; i < images.length; i++) {
+          if (parseInt(this.name) !== i)
+              fileBuffer.items.add(images[i]);
+        }
+        document.getElementById("fileInput").files = fileBuffer.files;
+        this.parentNode.remove()
+        this.remove()
+      })
+
+      reader.addEventListener("load", function() {
+        img.src = reader.result;
+      });
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+      div.appendChild(img);
+      div.appendChild(btn)
+      preview.appendChild(div)
+
+    }
+  });
+
+  function remove_photo(event,id){
+    event.preventDefault()
+    const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+    console.log(id);
+    fetch(`/admin/delete_image/${id}`, {
+      method: "DELETE",
+      headers: {
+        "X-CSRFToken": csrfToken,
+      },
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+      })
+      .catch(error => {
+        console.error(error);
+    });
+    const divToRemove = document.getElementById(id);
+    divToRemove.remove();
+  }
+
+    
+</script>
+
+
+{% endblock page-content %}
+    <!-- body section end -->

@@ -4,3 +4,10 @@
 .sizeform{
     display: none;
 }
+
+#cnf-box{
+    display: none;
+    font-size: larger;
+    background-color: brown;
+}
+  

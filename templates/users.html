@@ -1,30 +1,135 @@
 {% extends 'adminbase.html' %}
+{% load static %}
+
+{% block scripts %}
+
+{% endblock %}
 
 {% block page-content %}
+<style>
+    .blk-box{
+        display: none;    
+    }
+</style>
 <div class="container">
-    <table class="table table-dark table-hover">
+	<nav class="navbar navbar-expand-lg navbar-light bg-black">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item px-3">
+						<a class="nav-link active text-white rounded-3" id="users" aria-current="page" href="{% url 'users' %}">All users</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white rounded-3" id="blocked_users" href="{% url 'blocked_users' %}">Blocked Users</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white rounded-3" id="message_all_users" href="{% url 'message_all_users' %}">Message to users</a>
+					</li>
+					
+				</ul>
+				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
+					{% csrf_token %}
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input type="text" name="item" value="user" hidden>
+					<input type="text" id="blocked" name="blocked" value="{{blocked}}" hidden>
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form>
+			</div>
+		</div>
+	</nav>
+</div>
+<div class="container">
+    <table class="table table-dark table-hover table-responsive.">
         <thead>
-          <tr>
+          <tr class = "text-center">
             <th scope="col">#</th>
+			<th scope="col">User id</th>
             <th scope="col">name</th>
             <th scope="col">email</th>
             <th scope="col">phone number</th>
             <th scope="col">phone number verified</th>
+			<th scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
             {% for user in users %}
-          <tr> 
+          <tr class = "text-center"> 
             <td>{{ forloop.counter }}</td>
+			<td>{{ user.id }}</td>
             <td><a href="./user_update/{{ user.id }}">{{ user.first_name }}</a></td>
             <td>{{ user.email }}</td>
             <td>{{ user.phone_number }}</td>
             <td>{{ user.phone_number_verified }}</td>
+			<td>
+				<div class="d-flex justify-content-center ">
+					{% if user.blocked %}
+						<a class=" p-2 " href="{% url 'unblock_user' user.id %}">           
+							<button class=" btn-success " type="button">UN BLOCK</button>
+						</a>
+					{% else %}
+						<a class=" p-2 "  onclick="show_box('{{user.id}}')">               
+							<button class="btn-danger " type="button">BLOCK USER</button>
+						</a>
+						<div id="{{user.id}}" class="blk-box w-25 bg-secondary position-absolute object-fit-contain">
+							<p class=" text-center text-danger">Are you sure  ?<br><span class=" font-weight-bold"> BLOCK !!</span></p>
+							<div class="d-flex justify-content-center">
+								<button class="btn btn-success mx-2" onclick = "close_box('{{user.id}}')">NO</button>
+								<a class="btn btn-danger mx-2" href="{% url 'block_user' user.id %}" id="yes">YES</a>	
+							</div>   
+						</div>
+					{% endif %}
+				</div>
+			</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
       <!-- <a href="#"> <button class=" btn-warning rounded-pill px-4 py-2" >Add User</button> </a> -->
 </div>
+<div class="pagination d-flex justify-content-center  ">
+	<span class="step-links text-white">
+		{% if users.has_previous %}
+			<a href="?page=1&item=user&search_string={{search_string}}&blocked={{blocked}}">&laquo; first</a>
+			<a href="?page={{ users.previous_page_number }}&item=user&search_string={{search_string}}&blocked={{blocked}}">previous</a>
+		{% endif %}
+
+		<span class="current-page">
+			Page {{ users.number }} of {{ users.paginator.num_pages }}.
+		</span>
+
+		{% if users.has_next %}
+			<a href="?page={{ users.next_page_number }}&item=user&search_string={{search_string}}&blocked={{blocked}}">next</a>
+			<a href="?page={{ users.paginator.num_pages }}&item=user&search_string={{search_string}}&blocked={{blocked}}">last &raquo;</a>
+		{% endif %}
+	</span>
 </div>
+</div>
+<script>
+	window.onload = function(){
+	let blocked = document.getElementById('blocked').value
+	  if (blocked == 'True'){
+		document.getElementById('blocked_users').classList.add("bg-dark")
+	  }
+	  else{
+		document.getElementById('users').classList.add("bg-dark")
+	  }
+	}
+  
+
+	function show_box(user_id){	
+		box = document.getElementById(user_id)
+		console.log(box);
+		box.style.display = 'block'
+	}
+	function close_box(user_id){	
+		box = document.getElementById(user_id)
+		console.log(box);
+		box.style.display = 'none'
+	}
+ 
+ </script>
 {% endblock page-content %}

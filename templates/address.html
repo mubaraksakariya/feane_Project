@@ -1,26 +1,28 @@
 {% extends 'base.html' %}
 {% block page-content %}
-    <div class="container">
-        <form action="{% url 'addaddress' user.id %}" method="post" class="w-50">
+    <div class="container d-flex justify-content-center">
+        <form action="{% url 'addaddress' user.id %}" method="post" id="address" class="w-50">
             {% csrf_token %}
+            <input type="text" name="from" hidden value="0">
             <div>
-                <input type="text" class="form-control m-3 shadow" placeholder="House Number" name="House" />
+                <input type="text" class="form-control m-3 shadow" placeholder="House Number" name="House" required/>
             </div>
             <div>             
-                <input type="text" class="form-control m-3 shadow" placeholder="Bulding number" name="Bulding"   />
+                <input type="text" class="form-control m-3 shadow" placeholder="Bulding number" name="Bulding" required/>
             </div>
             <div>             
-                <input type="text" class="form-control m-3 shadow" placeholder="Street" name="Street" />
+                <input type="text" class="form-control m-3 shadow" placeholder="Street" name="Street" required />
             </div>
             <div>               
-                <input type="text" class="form-control m-3 shadow" placeholder="City" name="City"  />
+                <input type="text" class="form-control m-3 shadow" placeholder="City" name="City" required/>
             </div>
             <div>                
-                <input type="text" class="form-control m-3 shadow" placeholder="PIN" name="PIN"  />
+                <input type="text" class="form-control m-3 shadow" placeholder="PIN" name="PIN" id="PIN" required />
             </div>
             <div>               
-                <input type="text" class="form-control m-3 shadow" placeholder="Mobile" name="Mobile" />
+                <input type="text" class="form-control m-3 shadow" placeholder="Mobile" name="Mobile" id="Mobile" required/>
             </div>
+            <span class="ps-3 text-danger" id="Error"></span>
             {% for message in messages %}
                 <span>{{message}}</span>
             {% endfor %}
@@ -28,8 +30,36 @@
                 <button class="btn btn-warning " type="submit">
                     ADD
                 </button>
+                <a href= "{% url 'profile' %}" class="btn btn-success ">
+                    Cancel
+                </a>
             </div>
+        
         </form>
-
     </div>
+
+<script defer>
+    
+    let address = document.querySelector("#address");
+    let pinReg = /^\d{6}$/;
+    let phoneReg = /^(\+91|0)?d{10}$/;
+    let pin = document.getElementById("PIN");
+    let phone = document.getElementById("Mobile").innerHTML;
+    let Error = document.getElementById("Error");
+ 
+    address.addEventListener("submit",function(event){
+        event.preventDefault();
+        if(!pinReg.test(pin.value)){
+            Error.textContent = "Enter a valid 6 digit pin" 
+            return false
+        }
+        if(phoneReg.test(phone)){
+
+        }
+        window.location.href = "/profile/";
+        address.submit()
+        
+    })
+    
+</script>
 {% endblock %}

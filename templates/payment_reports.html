@@ -1,0 +1,139 @@
+{% extends 'adminbase.html' %}
+{% load static %}
+{% block scripts %}
+  <script defer src="{% static 'js/analysis.js' %}"></script>
+{% endblock %}
+
+{% block page-content  %}
+<div class="container-fluid  ">    
+    {% csrf_token %}
+    <div class="container p-0">
+      <nav class="navbar navbar-expand-lg navbar-ightl bg-black border border-white rounded-3 ">
+          <div class="container-fluid">
+          <a class="navbar-brand text-white" href="{% url 'admin_home' %}">Feane</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse " id="navbarSupportedContent">
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <!-- <li class="nav-item ">
+                      <a class="nav-link text-white " aria-current="page" href="{% url 'admin_home' %}">Dashboard</a>
+                  </li> -->
+                  <li class="nav-item ">
+                    <a class="nav-link active text-white bg-dark rounded-3" href="{% url 'payment_chart' %}">Payments</a>  
+                  </li>
+                  <li class="nav-item">
+                      <a class="nav-link text-white" href="{% url 'sales_report' %}">Sales Report</a>
+                  </li>
+                  
+              </ul>
+          </div>
+          </div>
+      </nav>
+  </div>
+    <!-- body section -->
+    <div class="container text-white">
+    
+      <div class="row justify-content-around align-items-center g-2">
+        <div class="col-4">
+          <h1 class="text-center p-2">Payment Type on sale</h1>
+          <div class="d-flex p-3 text-center justify-content-center">
+            <input class="mx-1 text-center" type="date" id="startCalendar" onchange="get_data()" value="2023-01-01"> 
+            <input class="mx-1 text-center" type="date" id="endCalendar" onchange="get_data()">
+            <!-- <button id="getdata" onclick="get_data()" >show</button> -->
+          </div>
+          <canvas id="payment-chart" class=""></canvas>
+        </div>
+
+        <div class="col-4">
+          <h1 class="text-center p-2">Category-wise sale</h1>           
+          <div class="d-flex p-3 text-center justify-content-center">  
+            <input class="mx-1 text-center" type="date" id="start-date" name="start-date" onchange="get_cat_data()" value="2023-01-01">
+            <input class="mx-1 text-center" type="date" id="end-date" onchange="get_cat_data()" name="end-date">
+            <!-- <button id="btn-cat" onclick = 'get_cat_data()'>show</button>   -->
+          </div>
+          <canvas id="category-chart"></canvas>
+        </div>  
+      </div>
+
+    </div>  
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  var endCalendar = document.getElementById('endCalendar');
+  var startCalendar = document.getElementById('startCalendar');
+  const currentDate = new Date().toISOString().slice(0, 10);
+  document.getElementById('end-date').value = currentDate
+  endCalendar.value = currentDate;
+
+  // Create a list of data for the chart
+  function drow_chart(payments,counts){
+    const canvas = document.getElementById('payment-chart');
+    if (canvas.chart) {
+    canvas.chart.destroy();
+    }
+    // Create the chart using Chart.js
+    var ctx = canvas.getContext('2d');
+    var chart = new Chart(ctx, {
+      type: 'doughnut',
+      data : {
+        labels: payments,
+        datasets: [{
+          data: counts,
+          // backgroundColor: ['#ff6384', '#36a2eb'],
+          hoverOffset: 4
+        }]
+      },
+      
+    });
+    canvas.chart = chart;
+  }
+
+
+  function get_data(){
+    var endCalendar = new Date(document.getElementById('endCalendar').value).toISOString();;
+    var startCalendar = new Date(document.getElementById('startCalendar').value).toISOString();
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    $.ajax({
+      url: "{% url 'payment_chart' %}",
+      type: "POST",
+      dataType: "json",
+      data: {
+        start_date: startCalendar,
+        end_date: endCalendar,
+        csrfmiddlewaretoken: csrfToken
+      },
+      success: function(response) {
+        // Handle the response data here
+        drow_chart(Object.keys(response.list1),Object.values(response.list1))
+      },
+      error: function(xhr, status, error) {
+        // Handle errors here
+        console.log(xhr.responseText);
+      }
+    });
+    
+  }
+  // ----------------------------------------------
+
+
+  // ----------------------------------------------
+  window.addEventListener('load', function() {
+    get_data()
+    get_cat_data()
+  });
+
+
+
+
+
+
+
+</script>
+
+
+
+{% endblock  %}

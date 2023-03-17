@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block page-content %}
+    
+    <div class="container">
+        <div class="d-flex justify-content-end">
+            <h5>Balance : Rs {{request.user.wallet_balance}}</h5>
+        </div>
+        <div class="d-flex justify-content-center">
+            <table class="table w-75">
+                <thead>
+                  <tr class="text-center">
+                    <th scope="col">#</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Transaction type</th>
+                    <th scope="col">Amount</th>
+                  </tr>
+                </thead>
+                <tbody class="text-center">
+                {% for item in wallet  %}
+                  <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{item.transaction_date}}</td>
+                    <td>{{item.get_transaction_type_display}}</td>
+                    <td>{{item.amount}}</td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+        </div>
+    </div>
+    <div class="pagination d-flex justify-content-center">
+      <span class="step-links">
+          {% if wallet.has_previous %}
+              <a href="?page=1">&laquo; first</a>
+              <a href="?page={{ wallet.previous_page_number }}">&lsaquo; previous</a>
+          {% endif %}
+  
+          <span class="current-page">
+              Page {{ wallet.number }} of {{ wallet.paginator.num_pages }}.
+          </span>
+  
+          {% if wallet.has_next %}
+              <a href="?page={{ wallet.next_page_number }}">next &rsaquo;</a>
+              <a href="?page={{ wallet.paginator.num_pages }}">last &raquo;</a>
+          {% endif %}
+      </span>
+  </div>
+{% endblock %}

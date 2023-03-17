@@ -1,37 +1,102 @@
 {% extends 'adminbase.html' %}
 {% block page-content  %}
-
+<div class="container">
+	<nav class="navbar navbar-expand-lg navbar-light bg-black">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item px-3" >
+						<a class="nav-link text-white rounded-3" id = "current_order" aria-current="page" href="{% url 'show_orders' %}">Current Orders</a>
+					</li>
+					<li class="nav-item px-3" >
+						<a class="nav-link text-white rounded-3" id = "order_history" href="{% url 'all_orders' %}">Order History</a>
+					</li>
+					<!-- <li class="nav-item px-3">
+						<a class="nav-link text-white" href="{% url 'addsize' %}">Sizes</a>
+					</li> -->
+				</ul>
+        <div class=" d-flex justify-content-end">
+          <form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
+            {% csrf_token %}
+            <input class="form-control me-2" type="search" placeholder="Search" value="{{search_string}}" aria-label="Search" name = "search_string">
+            <input type="text" name="item" value="order" hidden>
+            <input type="text" id = "order_processed" name="order_processed" value="{{order_processed}}" hidden>
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+				
+			</div>
+		</div>
+	</nav>
+</div>  
 <div class="container ">
     <table class="table table-dark table-hover">
         <thead>
-          <tr>
-            <th scope="col">User_id</th>
+          <tr class="text-center">
+            <th scope="col">Order id</th>
             <th scope="col">Date of order</th>
-            <th scope="col">Payment done</th>
+            <th scope="col">Payment mode</th>
             <th scope="col">Order_status</th>
+            <th scope="col">Total amount</th>
+            <th scope="col">Status</th>
             <th scope="col">Manage</th>
 
           </tr>
         </thead>
         <tbody>
             {% for items in orders %}
-          <tr> 
-            <td>{{ items.user.id }}</td>
-            <td>{{ items.order_created }}</td>
-            <td>{{ items.paid }}</td>
+          <tr  class="text-center" > 
+            <td>{{ items.id }}</td>
+            <td>{{ items.order_date }}</td>
+            <td>{{ items.payment_details.payment_type }}</td>
             <td>{{ items.order_processed }}</td>
-            
-            <td><div class="">
-                    <a href="{% url 'manage_order' items.id %}"><button class="btn btn-outline-success" type="button">Manage</button></a>
-                    <a href=""><button class="btn btn-outline-danger" type="button">Delete</button></a>
-                </div>
+            <td>{{ items.total }}</td>
+            <td>{{ items.get_status_display }}</td>
+            <td>
+              <div class="">
+                <a href="{% url 'manage_order' items.id %}"><button class="btn btn-outline-success" type="button">View</button></a>
+                
+              </div>
             </td>
 
           </tr>
           {% endfor %}
         </tbody>
       </table>
+      <!-- pagination links -->
+      <div class="pagination d-flex justify-content-center">
+        <span class="step-links text-white ">
+            {% if orders.has_previous %}
+                <a href="?page=1&item=order&search_string={{search_string}}&order_processed={{order_processed}}">&laquo; first</a>
+                <a href="?page={{ orders.previous_page_number }}&item=order&search_string={{search_string}}&order_processed={{order_processed}}">prev</a>
+            {% endif %}
+
+            <span class="current-page">
+                Page {{ orders.number }} of {{ orders.paginator.num_pages }}.
+            </span>
+
+            {% if orders.has_next %}
+                <a href="?page={{ orders.next_page_number }}&item=order&search_string={{search_string}}&order_processed={{order_processed}}">next</a>
+                <a href="?page={{orders.paginator.num_pages}}&item=order&search_string={{search_string}}&order_processed={{order_processed}}">last &raquo;</a>
+            {% endif %}
+        </span>
+      </div>
 </div>
 
+<script>
+  order_processed = document.getElementById('order_processed').value
+  window.onload = function(){
+    if (order_processed == 'True'){
+      document.getElementById('order_history').classList.add("bg-dark")
+    }
+    else{
+      document.getElementById('current_order').classList.add("bg-dark")
+    }
+  }
+</script>
 
 {% endblock  %}

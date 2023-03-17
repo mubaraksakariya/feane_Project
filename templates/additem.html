@@ -2,6 +2,23 @@
 {% load static %}
     <!-- body section -->
 {% block page-content %}
+<style>
+  .close-button {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  padding: 0px;
+  background-color: #ffffff;
+  border: none;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  max-height:15px;
+}
+</style>
+
+
 <div class="container ">
   <div class="d-flex flex-column justify-content-center">
     <!-- to add products----------------------------------- -->
@@ -46,9 +63,12 @@
           <div class="form-group row">
             <label for="inputEmail3" class="col-sm-2 col-form-label text-white "> Photos </label>
             <div class="col-sm-10 ">
-              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image1">
-              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image2">
-              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="image3">
+              <input type="file" class="form-control-file shadow p-1 mb-1 bg-white rounded" id="fileInput" name="images" multiple>
+            </div>
+          </div>
+          <div class="form-group row "> 
+            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
+            <div id="previewImage" class="d-flex g-2 col-sm-10 ">  
             </div>
           </div>
           <div class="form-group row">
@@ -72,95 +92,64 @@
           </div>
         </form>
       </div> 
-
-      
-
-      <div class="col">
-        <!-- to add category ------------------------------------------ -->
-        <div>
-          <div class="categoryform" id="categoryform">
-            <form class="  px-4"  method="post" action="{% url 'addcategory' %}" enctype="multipart/form-data" >
-              {% csrf_token %}
-              <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-5 col-form-label text-white ">Category Name</label>
-                <div class="col-sm-5">
-                    <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="category">
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
-                <div class="col">
-                  <button type="submit" class="btn btn-success px-4 mx-2 ">Add</button>
-                  <button onclick="closeForm(1)" class="btn btn-danger px-4 mx-2 ">Close</button>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="form-group row px-4"> 
-            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
-            <div class="col-sm-10" >
-              <button onclick="openForm(1)" id="show"  class="btn btn-primary">Add Category</button>
-            </div>
-          </div>
-        </div> 
-            <!-- to add a size ----------------------- -->
-        <div>
-          <div class="sizeform" id="sizeform">
-            <form class="  px-4"  method="post" action="{% url 'addsize' %}" enctype="multipart/form-data" >
-              {% csrf_token %}
-              <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-5 col-form-label text-white ">Size type</label>
-                <div class="col-sm-5">
-                    <input type="text" class="form-control shadow p-1 mb-1 bg-white rounded" id="inputEmail3" name="category">
-                </div>
-              </div>
-              <div class="form-group row">
-                <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
-                <div class="col">
-                  <button type="submit" class="btn btn-success px-4 mx-2 ">Add</button>
-                  <button onclick="closeForm(2)" class="btn btn-danger px-4 mx-2">Close</button>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="form-group row px-4"> 
-            <label for="inputEmail3" class="col-sm-2 col-form-label text-white "></label>
-            <div class="col-sm-10" >
-              <button onclick="openForm(2)" id="show2"  class="btn btn-primary">Add Size type</button>
-            </div>
-          </div>
-        </div>
-
-      
-            {% for message in messages %}
-              <span class = "text-warning" id="m"> {{ message }} </span>
-            {% endfor %}
-            
     </div>
   </div>       
 </div>
 
-
 <script>
-  function openForm(s) {
-    if (s == 1){
-      document.getElementById("categoryform").style.display = "block";
-      document.getElementById("show").style.display = "none";
-    }
-    else if(s == 2){
-      document.getElementById("sizeform").style.display = "block";
-      document.getElementById("show2").style.display = "none";
-    }
-    s = 0;
-  }
+  var fileInput = document.getElementById("fileInput");
+  const preview = document.getElementById("previewImage");
+  
+  fileInput.addEventListener("change", function() {
+    preview.innerHTML = "";
+    const files = fileInput.files;
+    for (let i = 0; i < files.length; i++) {
+      
+      const file = files[i];
+      const reader = new FileReader();
+      
+      const div = document.createElement("div");
+      div.className = "position-relative p-2"
 
-  function closeForm(s) {
-    if(s == 1)
-      document.getElementById("categoryform").style.display = "none";
-    else if(s == 2)
-      document.getElementById("sizeform").style.display = "none";
-    s = 0
-  }
+      // image 
+      const img = document.createElement("img");
+      img.className = "img-thumbnail img-fluid"
+      img.style.maxWidth = "100px";
+      img.id = "img"+i.toString()
+      img.style.position = "absalute"
+
+      // delete button
+      const btn = document.createElement("button")
+      btn.textContent = "x"
+      btn.className = "close-button rounded-circle"
+      btn.name = i.toString()
+      btn.addEventListener('click', function(e){
+        e.preventDefault()
+        var fileBuffer = new DataTransfer();
+        document.getElementById("img"+this.name).remove()
+        var images = document.getElementById("fileInput").files
+        for (let i = 0; i < images.length; i++) {
+          if (parseInt(this.name) !== i)
+              fileBuffer.items.add(images[i]);
+        }
+        document.getElementById("fileInput").files = fileBuffer.files;
+        this.remove()
+      })
+
+
+      reader.addEventListener("load", function() {
+        img.src = reader.result;
+      });
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+      div.appendChild(img);
+      div.appendChild(btn)
+      preview.appendChild(div)
+
+    }
+  });
 </script>
 
 <!-- body section end -->

@@ -1,0 +1,67 @@
+{% extends 'adminbase.html' %}
+
+{% block page-content %}
+<div class="container">
+	<nav class="navbar navbar-expand-lg navbar-light bg-black">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+				aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="collapse navbar-collapse py-2 border border-white rounded-3" id="navbarSupportedContent">
+				<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+					<li class="nav-item px-3">
+						<a class="nav-link active text-white rounded-3" id="users" aria-current="page" href="{% url 'users' %}">All users</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white rounded-3" id="blocked_users" href="{% url 'blocked_users' %}">Blocked Users</a>
+					</li>
+					<li class="nav-item px-3">
+						<a class="nav-link text-white rounded-3 bg-dark" id="message_all_users" href="{% url 'message_all_users' %}">Message to users</a>
+					</li>
+					
+				</ul>
+				<!-- <form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
+					{% csrf_token %}
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input type="text" name="item" value="user" hidden>
+					<input type="text" name="blocked" value="{{blocked}}" hidden>
+					<button class="btn btn-outline-success" type="submit">Search</button>
+				</form> -->
+			</div>
+		</div>
+	</nav>
+</div>
+<div class="container text-white">
+    <div class="row justify-content-center align-items-center g-2">
+        <div class="col-md-3"></div>
+        <div class="col">
+            <form action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="exampleFormControlInput1" class="form-label">Heading</label>
+                    <input type="text" class="form-control" id="exampleFormControlInput1" name="heading" placeholder="Header for the message" required>
+                  </div>
+                  <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label">Text</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" name="text" rows="3" required></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label">Photo *Optional</label>
+                    <input type="file" class="form-control" name="image" id="exampleFormControlInput1">
+                  </div>
+                  <div class="mb-3">
+                    <label for="exampleFormControlTextarea1" class="form-label"></label>
+                    <button class="btn btn-primary" type="submit">Push</button>
+                  </div>
+            </form>
+                
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+</div>
+
+
+
+
+{% endblock page-content %}

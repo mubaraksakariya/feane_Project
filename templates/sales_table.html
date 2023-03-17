@@ -1,0 +1,291 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+   <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="">
+
+<title>
+     Feane Summery
+</title>
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <!-- nice select  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
+  <!-- font awesome style -->
+  <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <!-- Custom styles for this template -->
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="{% static 'css/responsive.css' %}" rel="stylesheet" />
+  <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.3/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href=" https://cdn.datatables.net/buttons/2.3.5/css/buttons.dataTables.min.css">
+    
+</head>
+
+<body class="sub_page">
+    <div class="hero_area position-fixed w-100 z-3">
+        <div class="bg-box">
+            <img src="{% static 'images/hero-bg.jpg'%}" alt="">
+        </div>
+        <!-- header section strats -->
+        <header class="header_section">
+            <div class="container">
+                <nav class="navbar navbar-expand-lg custom_nav-container ">
+                    <a class="navbar-brand" href=" {% url 'admin_home' %} ">
+                        <span>
+                            Feane Admin
+                        </span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-toggle="collapse"
+                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                        <span class=""> </span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav  mx-auto ">
+                            <li class="nav-item ">
+                                <a class="nav-link" href=" {% url 'admin_home' %}">Home </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'show_orders' %}">Orders</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'users' %}">Users <span class="sr-only">(current)</span> </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'inventory' %} ">Inventory</a>
+                            </li>
+                        </ul>
+                        <div class="user_option">
+                            
+                            <div class=" px-5 " >
+                                <span class="text-white-50 h6 ">
+                                    {{request.user.email}}
+                                </span>
+                                <a href=" {% url 'admin_signout' %} " class="order_online">
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <!-- end header section -->
+    </div>
+
+    
+    <!-- body section -->
+    <div class="container-fluid bg-black min-vh-100  food_section layout_padding ">
+        <div class="container p-0">
+            <nav class="navbar navbar-expand-lg navbar-ightl bg-black border border-white rounded-3">
+                <div class="container-fluid">
+                <a class="navbar-brand text-white" href="{% url 'admin_home' %}">Feane</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <!-- <li class="nav-item">
+                            <a class="nav-link active text-white" aria-current="page" href="{% url 'admin_home' %}">Dashboard</a>
+                        </li> -->
+                        <li class="nav-item ">
+                            <a class="nav-link text-white" href="{% url 'payment_chart' %}">Payments</a>  
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white bg-dark rounded-3" href="{% url 'sales_report' %}">Sales Report</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+                </div>
+            </nav>
+        </div>
+        <div class="container text-white">
+            <div class="py-3 d-flex justify-content-between">
+                <form action="{% url 'sales_report' %}" method="post">
+                    {% csrf_token %}
+                    <div>
+                        <label for="from">Start</label>
+                        <input class="mx-2" type="date" name="from" id="from" value="{{start_date|date:'Y-m-d' }}">
+                        <label for="to">End</label>
+                        <input class="mx-2" type="date" name="to" id="to" value = "{{ end_date|date:'Y-m-d'  }}">
+                        <button class="btn btn-secondary" type="submit">Get data</button>
+                    </div>
+                </form>
+                <div class="d-flex">
+                    <form class="mx-2" action="{% url 'sales_report' %}" method="post">
+                        {% csrf_token %}
+                        <input class="mx-2" type="date" name="from" id="this_month" value = "" hidden>
+                        <input class="mx-2" type="date" name="to" id="today" value = "" hidden>
+                        <button class="btn btn-secondary" type="submit">This Month</button>
+                    </form>
+                    <form class="mx-2" action="{% url 'sales_report' %}" method="post">
+                        {% csrf_token %}
+                        <input class="mx-2" type="date" name="from" id="this_week" value="" hidden>
+                        <input class="mx-2" type="date" name="to" id="today2" value = "" hidden>
+                        <button class="btn btn-secondary" type="submit">This Week</button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+        
+        <div class="container bg-white">
+            <table  id="example" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Date</th>
+                        <th>Mode of payment</th>
+                        <th>Coupon %</th>
+                        <th>Total</th>
+                      </tr>
+                </thead>
+                <tbody>
+                    {% for item in order %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.user.first_name }}</td>
+                        <td>{{ item.user.email }}</td>
+                        <td>{{ item.order_modified }}</td>    
+                        <td>{{ item.payment_details.payment_type }}</td>
+                        <td>{{ item.coupon.discount }}</td>
+                        <td>{{ item.discounted_total }}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                    <tr class="">
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>  
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                    </tr>
+                   
+                    <tr class="">
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>    
+                        <td >Date</td>
+                        <td >{{start_date.date}}</td>
+                        <td>{{end_date.date}}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    
+                    <!-- <tr>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >Date</td>    
+                        <td >{{start_date.date}}</td>
+                        <td>{{end_date.date}}</td>    
+                    </tr> -->
+                    <tr>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>    
+                        <td>Total sale</td>
+                        <td >&nbsp;</td>
+                        <td>Rs {{ order_total }}</td> 
+                    </tr>   
+                </tfoot>
+            </table>
+              
+        </div>
+
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <!-- body section end -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+    <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+    <!-- popper js -->
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
+    <!-- bootstrap js -->
+    
+    <!-- owl slider -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
+    </script>
+    <!-- isotope js -->
+    <script src="https://unpkg.com/isotope-layout@3.0.4/dist/isotope.pkgd.min.js"></script>
+    <!-- nice select -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
+    <!-- custom js -->
+      
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.13.3/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.5/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
+
+    <script>
+        
+        var today  = new Date();
+        const this_month = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById("this_month").value = this_month.toISOString().slice(0, 10);
+        document.getElementById("today").value = today.toISOString().slice(0, 10);
+        document.getElementById("today2").value = today.toISOString().slice(0, 10);
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+        const startOfWeekString = startOfWeek.toISOString().split('T')[0];
+        document.getElementById('this_week').value = startOfWeekString;
+       
+   
+        $(document).ready(function() {     
+            $('#example').DataTable( {
+                dom: 'Bfrtip',
+                buttons: [
+                    // 'copyHtml5',
+                    // 'excelHtml5',
+                    // 'csvHtml5',
+                    // 'pdfHtml5',
+                    {extend: 'copyHtml5',footer: true},
+                    {extend: 'excelHtml5',footer: true},
+                    {extend: 'csvHtml5',footer: true},
+                    {extend: 'pdfHtml5',footer: true},
+                ],
+                "order": [[3, "desc"]],
+            });
+        });
+    
+        
+    </script>
+      
+</body>
+
+</html>

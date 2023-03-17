@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path,os
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -114,7 +113,9 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
+
+USE_L10N = True
 
 USE_I18N = True
 
@@ -139,3 +140,6 @@ AUTH_USER_MODEL = 'customer.User'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media/')
+
+RAZORPAY_KEY_ID = 'rzp_test_IeUGnsaAKY9aaU'
+RAZORPAY_SECRET_KEY = 'L1fxnx98xeUM8vYRDyjdFjeD'

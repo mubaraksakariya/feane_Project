@@ -2,32 +2,160 @@
 
 
 {% block page-content  %}
-<div class="container-fluid">
-    
-</div>
+<div class="container-fluid ">    
+{% csrf_token %}
+
+{% block admin-nav %}
+    <div class="container p-0">
+        <nav class="navbar navbar-expand-lg navbar-ightl bg-black border border-white rounded-3">
+            <div class="container-fluid">
+            <a class="navbar-brand text-white rounded-3" href="{% url 'admin_home' %}">Feane</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <!-- <li class="nav-item">
+                        <a class="nav-link active text-white bg-dark rounded-3" aria-current="page" href="">Dashboard</a>
+                    </li> -->
+                    <li class="nav-item ">
+                        <a class="nav-link text-white" href="{% url 'payment_chart' %}">Payments</a>  
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'sales_report' %}">Sales Report</a>
+                    </li>   
+                </ul>
+            </div>
+            </div>
+        </nav>
+    </div>
+    {% endblock admin-nav %}
     <!-- body section -->
-    <section class="about_section layout_padding container">
-        <div class="container">   
-            <div class="row">
-                <div class="col-md-6 ">
-                    <div class="img-box">
-                        <h1>Welcome admin</h1>
-                    </div>
+        
+    <div class="container text-white"> 
+        <div class="container">
+            <div class="img-box text-center">
+                <h1 class="text-warning">Welcome admin</h1>
+            </div>
+            <div class="">
+                <div class="text-center">
+                    <h2>
+                        Total sale
+                    </h2>
                 </div>
-                <div class="col-md-6">
-                    <div class="detail-box">
-                        <div class="heading_container">
-                            <h2>
-                                Total sale
-                            </h2>
-                        </div>
-                        <p>
-                            $99999
-                        </p>
-                    </div>
+                <p class="text-center">
+                    Rs {{total_sale}}
+                </p>
+            </div>
+        </div> 
+        <div class="row justify-content-center align-items-center g-2">
+            <div class="col-6"> 
+                <h4 class= "text-center p-2">Sales analysyis Product-wise</h6>              
+                <div class="d-flex p-3">
+                    <input class="mx-1 text-center" type="date" id="startCalendar" onchange="sales_productwise()" value="2023-01-01"> 
+                    <input class="mx-1 text-center" type="date" id="endCalendar" onchange="sales_productwise()" >
+                    <!-- <button onclick="sales_productwise()">show</button> -->
                 </div>
+                <canvas id="myChart"></canvas>               
+            </div>
+            <div class="col-6">
+                <h4 class="text-center">Less in stock</h4>
+                <table class="table table-bordered table-dark">
+                    <thead>
+                        <tr>
+                        <th>Item Name</th>
+                        <th>Current Stock</th>
+                        <th>total_sale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in low_items %}
+                        <tr>
+                            <td>{{ item.product_name }}</td>
+                            <td>{{ item.product_stock_amount }}</td>
+                            <td>{{ item.total_sale }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+                    </table>
+                {% if not low_items %}
+                    <p>All products looks Stocked right now</p>
+                {% endif %}
             </div>
         </div>
-    </section>
+    </div>
 
-    {% endblock  %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Create a script tag to write the JavaScript code -->
+<script>
+    const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    const endCalendar = document.getElementById('endCalendar');
+    const startCalendar = document.getElementById('startCalendar');
+    const currentDate = new Date().toISOString().slice(0, 10);
+    endCalendar.value = currentDate;
+    window.onload(sales_productwise())
+    
+
+    function sales_productwise(){
+        const canvas = document.getElementById('myChart');
+        const oldChart = Chart.getChart(canvas);
+        if (oldChart)
+            oldChart.destroy();
+
+        const endCalendar = document.getElementById('endCalendar');
+        const startCalendar = document.getElementById('startCalendar');
+        var enddate = new Date(endCalendar.value).toISOString();
+        var startdate = new Date(startCalendar.value).toISOString();
+
+        fetch('{% url 'product_sale_status' %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify({
+                'startdate': startdate,
+                'enddate': enddate,
+
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Extract the labels and values from the data
+                const labels = Object.keys(data);
+                const values = Object.values(data);
+                // Create the chart
+                const ctx = document.getElementById('myChart').getContext('2d');
+                const myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sales Data',
+                            data: values,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error(error));
+    }
+    
+    
+</script>
+
+{% endblock  %}
