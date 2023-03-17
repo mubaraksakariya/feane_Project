@@ -14,11 +14,11 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import F
 from django.db.models import Q
 import pytz
-from datetime import datetime
 from django.core.paginator import Paginator
 from django.db.models import Sum,Count
-from datetime import datetime
+from datetime import date, datetime, time, timezone
 from .models import Notification
+from dateutil import parser
 
 
 ###############
@@ -633,12 +633,33 @@ def product_sale_status(request):
 
 @admin_login_required
 def sales_report(request):
-    orders = Paginator(Order.objects.all().exclude(status = 0),10)
-    page_number = request.GET.get('page')
-    order = orders.get_page(page_number)
-    context = {
-        'order' : Order.objects.all().exclude(status = 0),
-    }
+    start_date = request.POST.get('from')
+    end_date = request.POST.get('to')
+    
+    if start_date is not None and end_date is not None:
+        start_date = parser.parse(start_date).replace(tzinfo=timezone.utc)
+        end_date = parser.parse(end_date).replace(tzinfo=timezone.utc)
+        orders = Order.objects.filter(Q(order_modified__lte = end_date) & Q(order_modified__gte = start_date)).exclude(status = 0).order_by('order_created')
+        total = 0
+        for item in orders:
+            total += item.amount_to_pay
+        context = {
+            'order' : orders,
+            'start_date' : start_date,
+            'end_date' : end_date,
+            'order_total': total
+        }
+    else:
+        orders = Order.objects.all().exclude(status = 0).order_by('order_created')
+        total = 0
+        for item in orders:
+            total += item.amount_to_pay
+        context = {
+            'order' : orders ,
+            'start_date' : date(date.today().year, 1, 1),
+            'end_date' : date.today(),
+            'order_total': total
+        }
     return render(request,'sales_table.html',context)
 
 

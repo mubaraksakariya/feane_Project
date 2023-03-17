@@ -14,7 +14,9 @@
   <meta name="author" content="" />
   <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="">
 
-  <title> Feane </title>
+<title>
+     Feane Summery
+</title>
 
   <!-- bootstrap core css -->
   <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
@@ -100,15 +102,15 @@
         <div class="container p-0">
             <nav class="navbar navbar-expand-lg navbar-ightl bg-black border border-white rounded-3">
                 <div class="container-fluid">
-                <a class="navbar-brand text-white" href="#">Feane</a>
+                <a class="navbar-brand text-white" href="{% url 'admin_home' %}">Feane</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a class="nav-link active text-white" aria-current="page" href="{% url 'admin_home' %}">Dashboard</a>
-                        </li>
+                        </li> -->
                         <li class="nav-item ">
                             <a class="nav-link text-white" href="{% url 'payment_chart' %}">Payments</a>  
                         </li>
@@ -121,6 +123,36 @@
                 </div>
             </nav>
         </div>
+        <div class="container text-white">
+            <div class="py-3 d-flex justify-content-between">
+                <form action="{% url 'sales_report' %}" method="post">
+                    {% csrf_token %}
+                    <div>
+                        <label for="from">Start</label>
+                        <input class="mx-2" type="date" name="from" id="from" value="{{start_date|date:'Y-m-d' }}">
+                        <label for="to">End</label>
+                        <input class="mx-2" type="date" name="to" id="to" value = "{{ end_date|date:'Y-m-d'  }}">
+                        <button class="btn btn-secondary" type="submit">Get data</button>
+                    </div>
+                </form>
+                <div class="d-flex">
+                    <form class="mx-2" action="{% url 'sales_report' %}" method="post">
+                        {% csrf_token %}
+                        <input class="mx-2" type="date" name="from" id="this_month" value = "" hidden>
+                        <input class="mx-2" type="date" name="to" id="today" value = "" hidden>
+                        <button class="btn btn-secondary" type="submit">This Month</button>
+                    </form>
+                    <form class="mx-2" action="{% url 'sales_report' %}" method="post">
+                        {% csrf_token %}
+                        <input class="mx-2" type="date" name="from" id="this_week" value="" hidden>
+                        <input class="mx-2" type="date" name="to" id="today2" value = "" hidden>
+                        <button class="btn btn-secondary" type="submit">This Week</button>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+        
         <div class="container bg-white">
             <table  id="example" class="display" style="width:100%">
                 <thead>
@@ -146,9 +178,49 @@
                         <td>{{ item.discounted_total }}</td>
                         
                     </tr>
-                  {% endfor %}
+                    {% endfor %}
+                    <tr class="">
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>  
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                    </tr>
+                   
+                    <tr class="">
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>    
+                        <td >Date</td>
+                        <td >{{start_date.date}}</td>
+                        <td>{{end_date.date}}</td>
+                    </tr>
                 </tbody>
-              </table>
+                <tfoot>
+                    
+                    <!-- <tr>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >Date</td>    
+                        <td >{{start_date.date}}</td>
+                        <td>{{end_date.date}}</td>    
+                    </tr> -->
+                    <tr>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>
+                        <td >&nbsp;</td>    
+                        <td>Total sale</td>
+                        <td >&nbsp;</td>
+                        <td>Rs {{ order_total }}</td> 
+                    </tr>   
+                </tfoot>
+            </table>
               
         </div>
 
@@ -183,19 +255,35 @@
     <script src="https://cdn.datatables.net/buttons/2.3.5/js/buttons.html5.min.js"></script>
 
     <script>
+        
+        var today  = new Date();
+        const this_month = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById("this_month").value = this_month.toISOString().slice(0, 10);
+        document.getElementById("today").value = today.toISOString().slice(0, 10);
+        document.getElementById("today2").value = today.toISOString().slice(0, 10);
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+        const startOfWeekString = startOfWeek.toISOString().split('T')[0];
+        document.getElementById('this_week').value = startOfWeekString;
+       
    
-        $(document).ready(function() {
+        $(document).ready(function() {     
             $('#example').DataTable( {
                 dom: 'Bfrtip',
                 buttons: [
-                    'copyHtml5',
-                    'excelHtml5',
-                    'csvHtml5',
-                    'pdfHtml5'
-                ]
-            } );
-            
-        } );
+                    // 'copyHtml5',
+                    // 'excelHtml5',
+                    // 'csvHtml5',
+                    // 'pdfHtml5',
+                    {extend: 'copyHtml5',footer: true},
+                    {extend: 'excelHtml5',footer: true},
+                    {extend: 'csvHtml5',footer: true},
+                    {extend: 'pdfHtml5',footer: true},
+                ],
+                "order": [[3, "desc"]],
+            });
+        });
+    
+        
     </script>
       
 </body>

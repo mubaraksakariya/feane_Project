@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block scripts %}
-<script src="{% static 'js/confirmation.js' %}"></script>
+    <script src="{% static 'js/confirmation.js' %}"></script>
 {% endblock %}
 
 
@@ -69,8 +69,7 @@
                     <p class=" text-center text-danger">Are you sure  ?<br><span class=" font-weight-bold"> BLOCK !!</span></p>
                     <div class="d-flex justify-content-center">
                         <button class="btn btn-success mx-2" id="no">NO</button>
-                        <a class="btn btn-danger mx-2" href="{% url 'block_user' user.id %}" id="yes">YES</a>
-                        
+                        <a class="btn btn-danger mx-2" href="{% url 'block_user' user.id %}" id="yes">YES</a>  
                     </div>   
                 </div>
 

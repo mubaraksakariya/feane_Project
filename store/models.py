@@ -101,9 +101,10 @@ class Order(models.Model):
             wallet_amount_payed =  self.payment_details.wallet_transaction.amount
         else:
             wallet_amount_payed = 0
-        print("amount to pay is")
-        print(wallet_amount_payed)
         return (self.discounted_total + wallet_amount_payed)
+    @property
+    def order_status(self):
+        return self.get_status_display()
 
 class Coupon(models.Model):
     name = models.CharField(_(""), max_length=50)

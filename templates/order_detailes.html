@@ -19,7 +19,7 @@
             <th scope="col">User Name</th>
             <th scope="col">Product name</th>
             <th scope="col">Quantity</th>
-            <th scope="col">Order id</th>
+            <th scope="col">Total</th>
             <!-- <th scope="col">Action</th> -->
           </tr>
         </thead>
@@ -29,12 +29,20 @@
             <td>{{ items.user.first_name }}</td>
             <td>{{ items.product.product_name }}</td>
             <td>{{ items.quantity }}</td>
-            <td>{{ order_id }}</td>
-            
+            <td>{{ items.total }}</td>
           </tr>
           {% endfor %}
         </tbody>
     </table>
+    <div class='d-flex justify-content-between text-white p-3'>
+        <div>
+            <span>{{order.order_status}} </span>
+        </div>
+        <div class="text-end">
+            <p>Order # : {{order.id}}</p>
+            <p>Order Total : Rs {{order.total}} </p>  
+        </div>   
+    </div>
     <div class='d-flex justify-content-between'>
         <div>
             {% if order.status == '1' %}
