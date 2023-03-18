@@ -37,6 +37,7 @@ def send_otp(phone_number,OTP):
 
     if responseData["messages"][0]["status"] == "0":
         print("Message sent successfully.")
+        print(OTP)
     else:
         print(f"Message failed with error: {responseData['messages'][0]['error-text']}")
 
