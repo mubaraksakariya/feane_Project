@@ -116,6 +116,7 @@ def addToCart(request,id=None):
         data = request.body.decode("utf-8")
         data = json.loads(data)
         product_id = data.get('product_id')
+        print(product_id)
         quantity = data.get('quantity')
         product = Product.objects.get(id = product_id)
         if not Cart.objects.filter(user = request.user,product=product,purchased = False).exists():
