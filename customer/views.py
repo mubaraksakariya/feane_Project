@@ -1,5 +1,6 @@
 from django.shortcuts import render,HttpResponse,redirect
 from django.contrib.auth import authenticate,login,logout
+from django.views.decorators.cache import never_cache
 from django.contrib import messages
 from twilio.rest import Client
 import vonage
@@ -25,7 +26,7 @@ def index(request):
 # to send otp###########################
 
 def send_otp(phone_number,OTP):
-    client = vonage.Client(key="26680761", secret="dwwQ3Qw8Sh26HXjy")
+    client = vonage.Client(key="a0b774ff", secret="bwrmUdsVg0fhSuGI")
     sms = vonage.Sms(client)
     responseData = sms.send_message(
         {
@@ -43,15 +44,32 @@ def send_otp(phone_number,OTP):
 
 
 # to sign up###########################
+
 def userexist(request):
     email = request.POST.get('email','')
+    phone = request.POST.get('phone','')
+    print(phone)  
+    if len(phone) == 10:
+        phone = "+91" + phone.replace(" ", "")
+    if not phone.startswith("+"):
+        phone = "+" + phone.replace(" ", "")
     user = User.objects.filter(email=email).exists()
-    print(user)
+    print(phone)
+    phone = User.objects.filter(phone_number=phone).exists()
+    print(phone)
     if user:
-        return JsonResponse({'exist': 'true'})
+        response = {
+            'user': 'true',
+        }
     else:
-        return JsonResponse({'exist': 'false'})
-
+        response = {
+            'user': 'false',
+        }
+    if phone:
+        response.update({'phone': 'true'})
+    else:
+        response.update({'phone':'false'})
+    return JsonResponse(response)   
 
 def user_signup(request):
     if request.method == 'POST':
@@ -70,7 +88,6 @@ def user_signup(request):
         else:
             messages.info(request,'Email already exists')
             return render(request,'signup.html')
-        return redirect('/signin')
     elif not request.user.is_authenticated:
         return render(request,'signup.html')
     else:
@@ -142,7 +159,8 @@ def user_signin(request):
         return render(request,'signin.html')
     else:
         return redirect('/')    
-    
+
+@never_cache
 @login_required(login_url='signin')
 def user_profile(request):
     address = Address.objects.filter(user = request.user)
@@ -157,6 +175,7 @@ def user_profile(request):
     }
     return render(request,'profile.html',context=context)
 
+@never_cache
 @login_required(login_url='signin')   
 def profile_update(request,id):
     user = User.objects.get(id = id)
@@ -194,6 +213,7 @@ def user_signout(request):
 
 
 # ############Add Address ######################
+@never_cache
 @login_required(login_url='signin')   
 def addaddress(request,id):
     if request.method == 'POST':
@@ -225,7 +245,8 @@ def deleteAddress(request,id):
         address.save()
     return redirect('profile')
 
-@login_required(login_url='signin')   
+@never_cache
+@login_required(login_url='signin')  
 def updateAddress(request,id):
     if request.method == "POST":
         address = Address.objects.get(id=id)
@@ -263,6 +284,7 @@ def message_read(request):
             item.save()
         return JsonResponse({"status": "success"})
 
+@never_cache
 @login_required(login_url='signin')
 def user_messages(request,id = None,item = None):
     if id is not None:

@@ -1,6 +1,7 @@
 import json
 from django.conf import settings
 from django.shortcuts import render,redirect,HttpResponse
+from django.views.decorators.cache import never_cache
 from customer.models import User,Address,Wallet
 from store.models import Order,Images,Coupon
 from .models import Product,Category,Cart,Order,Payment
@@ -16,6 +17,7 @@ from django.core.paginator import Paginator
 
 
 ### Store homepage #####################################
+
 @login_required(login_url='/signin')
 def store(request,id=None):
     cat = request.GET.get('item')
@@ -65,6 +67,7 @@ def search(request):
     }
     return render(request,"index.html",context=context)   
 #### Product page ###############################
+@never_cache
 @login_required(login_url='/signin')
 def product(request,id):
     product = Product.objects.get(id = id)
@@ -84,6 +87,7 @@ def product(request,id):
     return render(request,'product.html',context = context)
 
 ##########  Cart and Cart logic #########################
+@never_cache
 @login_required(login_url='/signin')
 def cart(request):
     cart = Cart.objects.filter(user = request.user.id,purchased = False)
@@ -97,6 +101,7 @@ def cart(request):
         'sum':sum,      
     }
     return render(request,'cart.html',context=context)
+
 
 @login_required(login_url='/signin')
 def cartItems(request):
@@ -134,6 +139,7 @@ def removefromcart(request,id):
     item.delete()
     return redirect('cart')
 
+@never_cache
 @login_required(login_url='/signin')
 def checkout(request): 
     cart = Cart.objects.filter(user = request.user.id,purchased = False)
@@ -270,7 +276,9 @@ def placeOrder(request):
     else:
         return redirect('user_home')
 
+@never_cache
 @csrf_exempt
+@login_required(login_url='/signin')
 def payment_callback(request,id):
     client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID,settings.RAZORPAY_SECRET_KEY))
     online_payment = client.payment.fetch(id)
@@ -336,6 +344,7 @@ def payment_callback(request,id):
 
 ####### Order section #####################
 
+@never_cache
 @login_required(login_url='/signin')
 def user_order(request,id = None):
     if id is not None:
@@ -361,7 +370,7 @@ def user_order(request,id = None):
         }
     return render(request,'user_orders.html',context)
 
-
+@never_cache
 @login_required(login_url='/signin')
 def user_order_history(request,id = None):
     if id is not None:
@@ -405,7 +414,7 @@ def cart_count_change(request):
         }
         return JsonResponse(response)
 
-
+@never_cache
 @login_required(login_url='/signin')
 def wallet(request):
     wallet_page = Paginator(Wallet.objects.filter(user = request.user).order_by('-transaction_date'),10)

@@ -8,18 +8,20 @@ form.addEventListener("submit", function(event) {
     let name = form.elements.namedItem('name').value; 
     let email = form.elements.namedItem('email').value; 
     let phone = form.elements.namedItem('number').value; 
-    let phoneRegex = /^\d{10}$/;
+    let phoneRegex = /^(\+91?)?[0]?(91)?\d{10}$/;
     let emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-
-
-    // if (!phoneRegex.test(phone)) {
-    //     alert("Invalid phone number. Please enter a 10-digit phone numberrrrrrrrrrrr.");
-    //     event.preventDefault();
-    // }
-    // if (!emailRegex.test(email)) {
-    //     alert("Invalid email.");
-    //     event.preventDefault();
-    // }
+  console.log(phone);
+    if (!phoneRegex.test(phone)) {
+        document.getElementById('message').innerHTML = "Invalid phone number. Please enter a 10-digit phone number."
+        event.preventDefault();
+        return false;
+    }
+    
+    if (!emailRegex.test(email)) {
+        document.getElementById('message').innerHTML = "Invalid email.";
+        event.preventDefault();
+        return false;
+    }
     if (password1 != password2) {
         document.getElementById('message').innerHTML = "Passwords do not match"
         event.preventDefault();
@@ -33,8 +35,13 @@ form.addEventListener("submit", function(event) {
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.onreadystatechange = function() {
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-          var user = JSON.parse(xhr.responseText)
-          if (user.exist == "true"){
+          var response = JSON.parse(xhr.responseText)
+          if (response.phone == "true"){
+            console.log(response.phone);
+            document.getElementById('message').innerHTML = "Phone number already taken"
+          }
+          else if (response.user == "true"){
+            console.log(response.user);
             document.getElementById('message').innerHTML = "Email already taken"
           }
           else{
@@ -42,7 +49,7 @@ form.addEventListener("submit", function(event) {
            }
         }
       };
-    xhr.send("email=" + email);  
+    xhr.send("email=" + email + '&phone='+phone);
 });
 
 

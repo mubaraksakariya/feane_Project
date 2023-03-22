@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block page-content %}
-    <div class="container d-flex justify-content-center">
+    <div class="container d-flex justify-content-center food_section layout_padding">
         <form action="{% url 'addaddress' user.id %}" method="post" id="address" class="w-50">
             {% csrf_token %}
             <input type="text" name="from" hidden value="0">
