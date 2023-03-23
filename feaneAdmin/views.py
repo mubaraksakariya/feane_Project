@@ -49,11 +49,12 @@ def admin_login_required(view_func, redirect_url="admin_signin"):
 @admin_login_required
 def adminHome(request): 
     admin = request.user
+    today = datetime.today()
+    first_day_of_month = datetime(today.year, today.month, 1)
     orders = Order.objects.all()
-    total_sale = sum([order.total for order in orders])
+    total_sale = sum([order.total for order in Order.objects.filter(Q(order_created__gte = first_day_of_month) & Q(order_created__lte = today),order_processed = True)])
     low_items = Product.objects.filter(product_stock_amount__lt=15, is_deleted = False).order_by('product_stock_amount')[:3]
     low_items = low_items.annotate(total_sale = Sum('cart__quantity'))
-
     context = {
         'admin':admin,
         'total_sale':total_sale,

@@ -47,8 +47,9 @@ def send_otp(phone_number,OTP):
 
 def userexist(request):
     email = request.POST.get('email','')
-    phone = request.POST.get('phone','')
-    print(phone)  
+    phone = request.POST.get('phone_number')
+    print(phone)
+    print(email)
     if len(phone) == 10:
         phone = "+91" + phone.replace(" ", "")
     if not phone.startswith("+"):

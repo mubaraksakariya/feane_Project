@@ -7,10 +7,10 @@ form.addEventListener("submit", function(event) {
     let password2 = form.elements.namedItem('password2').value; 
     let name = form.elements.namedItem('name').value; 
     let email = form.elements.namedItem('email').value; 
-    let phone = form.elements.namedItem('number').value; 
+    let phone = document.getElementById('number').value; 
     let phoneRegex = /^(\+91?)?[0]?(91)?\d{10}$/;
     let emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-  console.log(phone);
+    console.log(phone);
     if (!phoneRegex.test(phone)) {
         document.getElementById('message').innerHTML = "Invalid phone number. Please enter a 10-digit phone number."
         event.preventDefault();
@@ -49,7 +49,7 @@ form.addEventListener("submit", function(event) {
            }
         }
       };
-    xhr.send("email=" + email + '&phone='+phone);
+    xhr.send("email=" + email + "&phone_number="+phone);
 });
 
 
