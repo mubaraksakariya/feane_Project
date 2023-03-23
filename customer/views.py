@@ -212,6 +212,15 @@ def user_signout(request):
     logout(request)
     return redirect('signin')
 
+######### forgot password ##########
+def check_for_acoount(request):
+    if request.method == 'POST':
+        phone = request.POST.get('phone', '')
+        print(phone)
+        user_id = 1
+    return JsonResponse({'user_id': user_id})
+def forgot_Password(request):
+    return render(request,'forgot_pass.html')
 
 # ############Add Address ######################
 @never_cache

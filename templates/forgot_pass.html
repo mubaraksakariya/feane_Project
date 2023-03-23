@@ -1,0 +1,213 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="" />
+  <link rel="shortcut icon" href="{% static 'images/favicon.png"' %} type="">
+
+  <title> Feane </title>
+
+  <!-- bootstrap core css -->
+  <link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+
+  <!--owl slider stylesheet -->
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <!-- nice select  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/css/nice-select.min.css" integrity="sha512-CruCP+TD3yXzlvvijET8wV5WxxEh5H8P4cmz0RFbKK6FlZ2sYl3AEsKlLPHbniXKSrDdFewhbmBK5skbdsASbQ==" crossorigin="anonymous" />
+  <!-- font awesome style -->
+  <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet" />
+
+  <!-- Custom styles for this template -->
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+  <!-- responsive style -->
+  <link href="{% static 'css/responsive.css' %}" rel="stylesheet" />
+<style>
+    .enter_otp{
+        display: none;
+    }
+    .pass{
+        display: none;
+    }
+
+</style>
+
+
+</head>
+
+<body class="sub_page">
+
+    <div class="hero_area">
+        <div class="bg-box">
+        <img src="{% static 'images/hero-bg.jpg'%}" alt="">
+        </div>
+        <!-- header section strats -->
+        <header class="header_section">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg custom_nav-container ">
+            <a class="navbar-brand" href="{% url 'user_home' %}">
+                <span>
+                Feane
+                </span>
+            </a>
+            </nav>
+        </div>
+        </header>
+        <!-- end header section -->
+    </div>
+
+  <!-- Forgot pass -->
+
+    <section class="book_section layout_padding vh-100">
+        <div class="container">
+            <div class="row justify-content-center align-items-center g-2 ">
+                <div class="col-6 d-flex justify-content-center">
+                    <div class="w-75">
+                        <div class="mb-3 my-2 get_otp" id="get_otp">
+                            <label for="exampleInputEmail1" class="form-label">Enter Mobile number</label>
+                            <input type="text" class="form-control" name="" id="mobile">
+                            <span id="get_otp_error"></span>
+                            <div>
+                                <button class="btn btn-primary my-2" onclick="sendotp()" type="button">Verify</button>
+                            </div> 
+                        </div>
+                        
+
+                        <div class="mb-3 my-2 enter_otp" id="enter_otp">
+                            <label for="exampleInputEmail1" class="form-label">Enter OTP</label>
+                            <input type="text" class="form-control" name="" id="otp"> 
+                            <button class="btn btn-primary my-2" type="button">Enter Otp</button>                          
+                        </div>
+                         
+                    </div>  
+                </div>
+                <div class="col-6 d-flex justify-content-center">
+                    <form action="" method="post" class="w-75 pass">
+                        <div  class="mb-3">
+                            <label for="exampleInputEmail1" class="form-label">Enter Password</label>
+                            <input type="text" class="form-control" name="password1" id="p1">
+                            <label for="exampleInputEmail1" class="form-label">Re Enter Password</label>
+                            <input type="text" class="form-control" name="password2" id="p2">
+                            <button class="btn btn-primary m-2" type="submit">Submit</button>
+                        </div>     
+                    </form> 
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+<!-- footer section -->
+<footer class="footer_section">
+    <div class="container">
+    <div class="row">
+        <div class="col-md-4 footer-col">
+        <div class="footer_contact">
+            <h4>
+            Contact Us
+            </h4>
+            <div class="contact_link_box">
+            <a href="">
+                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                <span>
+                Location
+                </span>
+            </a>
+            <a href="">
+                <i class="fa fa-phone" aria-hidden="true"></i>
+                <span>
+                Call +01 1234567890
+                </span>
+            </a>
+            <a href="">
+                <i class="fa fa-envelope" aria-hidden="true"></i>
+                <span>
+                demo@gmail.com
+                </span>
+            </a>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-4 footer-col">
+        <div class="footer_detail">
+            <a href="" class="footer-logo">
+            Feane
+            </a>
+            <p>
+            Necessary, making this the first true generator on the Internet. It uses a dictionary of over 200 Latin words, combined with
+            </p>
+            <div class="footer_social">
+            <a href="">
+                <i class="fa fa-facebook" aria-hidden="true"></i>
+            </a>
+            <a href="">
+                <i class="fa fa-twitter" aria-hidden="true"></i>
+            </a>
+            <a href="">
+                <i class="fa fa-linkedin" aria-hidden="true"></i>
+            </a>
+            <a href="">
+                <i class="fa fa-instagram" aria-hidden="true"></i>
+            </a>
+            <a href="">
+                <i class="fa fa-pinterest" aria-hidden="true"></i>
+            </a>
+            </div>
+        </div>
+        </div>
+        <div class="col-md-4 footer-col">
+        <h4>
+            Opening Hours
+        </h4>
+        <p>
+            Everyday
+        </p>
+        <p>
+            10.00 Am -10.00 Pm
+        </p>
+        </div>
+    </div>
+    <div class="footer-info">
+        <p>
+        &copy; <span id="displayYear"></span> All Rights Reserved By
+        <a href="https://html.design/">Free Html Templates</a><br><br>
+        &copy; <span id="displayYear"></span> Distributed By
+        <a href="https://themewagon.com/" target="_blank">ThemeWagon</a>
+        </p>
+    </div>
+    </div>
+</footer>
+<script src="{% static 'js/forgot_pass.js' %}"></script>
+<!-- footer section -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+
+<!-- jQery -->
+<script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+<!-- popper js -->
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+</script>
+<!-- bootstrap js -->
+<script src="{% static 'js/bootstrap.js' %}"></script>
+<!-- owl slider -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
+</script>
+<!-- isotope js -->
+<script src="https://unpkg.com/isotope-layout@3.0.4/dist/isotope.pkgd.min.js"></script>
+<!-- nice select -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-nice-select/1.1.0/js/jquery.nice-select.min.js"></script>
+<!-- custom js -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<!-- <script src="{% static 'js/custom.js' %}"></script> -->
+
+</body>
+
+</html>
