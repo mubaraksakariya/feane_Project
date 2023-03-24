@@ -5,7 +5,7 @@ from django.contrib import messages
 from twilio.rest import Client
 import vonage
 from .models import User,Address
-from store.models import Order, Product
+from store.models import Order, Product,Anonymous_Cart,Cart
 import random
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +18,6 @@ OTP = 123
 # Create your views here.
 
 # to home page###################
-@login_required(login_url='signin')
 def index(request):
     return redirect('/store')
 
@@ -148,7 +147,19 @@ def user_signin(request):
             response.set_cookie('return_url',request.path)
             return response
         elif user is not None:
+            anonymous_Cart = Anonymous_Cart.objects.filter(session_id = request.session.session_key)
             login(request,user)
+            cart = Cart.objects.filter(user = request.user, purchased = False)
+            user_product_list = [item.product for item in cart]
+            ano_product_list = [item.product for item in anonymous_Cart]
+            for item in anonymous_Cart:
+                if item.product in user_product_list:
+                    cart_item = Cart.objects.get(user = request.user, purchased = False,product = item.product)
+                    cart_item.quantity = item.quantity
+                    cart_item.save()
+                else:
+                    Cart.objects.create(user = request.user, product = item.product, quantity = item.quantity)
+            anonymous_Cart.delete()
             return redirect('/')
         else:
             messages.info(request,f'Invalid credential')

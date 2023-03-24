@@ -99,6 +99,7 @@ function addToCart(p){
     xhr.setRequestHeader("X-CSRFToken", csrf_token);
     xhr.onreadystatechange = function() {      
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            console.log(xhr.responseText);
             var response = JSON.parse(xhr.responseText); 
             document.getElementById('cart_count').innerHTML = response.cart_count
             btn.setAttribute("title", "Already added to cart");     

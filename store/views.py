@@ -4,7 +4,7 @@ from django.shortcuts import render,redirect,HttpResponse
 from django.views.decorators.cache import never_cache
 from customer.models import User,Address,Wallet
 from store.models import Order,Images,Coupon
-from .models import Product,Category,Cart,Order,Payment
+from .models import Product,Category,Cart,Order,Payment,Anonymous_Cart
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.core.serializers import serialize
@@ -18,7 +18,6 @@ from django.core.paginator import Paginator
 
 ### Store homepage #####################################
 
-@login_required(login_url='/signin')
 def store(request,id=None):
     cat = request.GET.get('item')
     if id is not None:
@@ -29,14 +28,17 @@ def store(request,id=None):
         category = Category.objects.get(id = cat)
         products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
     else:  
-        products = Product.objects.filter(is_deleted = False).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
-        
-    cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
+        products = Product.objects.filter(is_deleted = False).exclude(product_stock_amount__lte = 1).order_by('-updated_at')     
+    if request.user.is_authenticated:
+        cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
+        request.session['cart_count'] = cart_count
+    else:
+        cart_count = Anonymous_Cart.objects.filter(session_id = request.session.session_key).count()
+        request.session['cart_count'] = cart_count
     paginator = Paginator(products, 6)
     page_number = request.GET.get('page')
     products = paginator.get_page(page_number)
     context = {
-        'user': request.user.first_name,
         'products':products,
         'cart_count':cart_count,
         'category':Category.objects.all(),
@@ -44,7 +46,7 @@ def store(request,id=None):
     }
     return render(request,"index.html",context=context)
 
-@login_required(login_url='/signin')
+
 def search(request):
     if request.method == 'POST':
         search_term =  request.POST['search-term']
@@ -53,34 +55,40 @@ def search(request):
     if search_term is None:
         search_term = ""
     products = Product.objects.filter(product_name__icontains = search_term).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
-    cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
+    if request.user.is_authenticated:
+        cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
+        request.session['cart_count'] = cart_count
+    else:
+        cart_count = Anonymous_Cart.objects.filter(session_id = request.session.session_key).count()
+        request.session['cart_count'] = cart_count
     search_pages = Paginator(products, 6)
     page_number = request.GET.get('page')
     print(request.GET.get('page'))
     products = search_pages.get_page(page_number)
     
     context = {
-        'user': request.user.first_name,
         'products':products,
         'cart_count':cart_count,
         'item':search_term,
     }
     return render(request,"index.html",context=context)   
+
 #### Product page ###############################
-@never_cache
-@login_required(login_url='/signin')
+
 def product(request,id):
     product = Product.objects.get(id = id)
     images = Images.objects.filter(product = product)
-    cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
+    
     try:
-        item_count = Cart.objects.get(product=product,user = request.user,purchased = False).quantity
+        if request.user.is_authenticated:
+            item_count = Cart.objects.get(product=product,user = request.user,purchased = False).quantity
+        else:
+            item_count = Anonymous_Cart.objects.get(product = product).quantity
     except:
         item_count = 1
     context = {
         'product': product,
         'user': request.user,
-        'cart_count':cart_count,
         'item_count':item_count,
         'images':images
     }
@@ -88,29 +96,35 @@ def product(request,id):
 
 ##########  Cart and Cart logic #########################
 @never_cache
-@login_required(login_url='/signin')
 def cart(request):
-    cart = Cart.objects.filter(user = request.user.id,purchased = False)
-    cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
-    sum = 0
-    for item in cart:
-        sum = sum + (item.product.product_prize * item.quantity)
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user = request.user.id,purchased = False)
+        sum = 0
+        for item in cart:
+            sum = sum + (item.product.product_prize * item.quantity)
+    else:
+        cart = Anonymous_Cart.objects.filter(session_id = request.session.session_key)
+        sum = 0
+        for item in cart:
+            sum = sum + (item.product.product_prize * item.quantity)
     context = {
         'cart' : cart,
-        'cart_count':cart_count,
         'sum':sum,      
     }
     return render(request,'cart.html',context=context)
 
 
-@login_required(login_url='/signin')
+@never_cache
 def cartItems(request):
-    id_list = Cart.objects.filter(user = request.user,purchased = False)
+    if request.user.is_authenticated:
+        id_list = Cart.objects.filter(user = request.user,purchased = False)
+    else:
+        id_list = Anonymous_Cart.objects.filter(session_id = request.session.session_key)
     id_list = list(id_list.values_list('product', flat=True))
     response_data = {'myList': id_list}
     return JsonResponse(response_data)
 
-@login_required(login_url='/signin')
+@never_cache
 def addToCart(request,id=None):
     if request.method == 'POST':
         data = request.body.decode("utf-8")
@@ -119,13 +133,25 @@ def addToCart(request,id=None):
         print(product_id)
         quantity = data.get('quantity')
         product = Product.objects.get(id = product_id)
-        if not Cart.objects.filter(user = request.user,product=product,purchased = False).exists():
-            Cart.objects.create(user = request.user,product = product,quantity = 1)
-        cartItem = Cart.objects.get(user = request.user,product=product,purchased = False)
+        try:
+            if not Cart.objects.filter(user = request.user,product=product,purchased = False).exists():
+                Cart.objects.create(user = request.user,product = product,quantity = 1)
+                request.session['cart_count'] += 1
+        except:
+            if not Anonymous_Cart.objects.filter(session_id = request.session.session_key,product=product).exists():
+                Anonymous_Cart.objects.create(session_id = request.session.session_key,product = product,quantity = 1)    
+                request.session['cart_count'] += 1
+        if request.user.is_authenticated:
+            cartItem = Cart.objects.get(user = request.user,product=product,purchased = False)
+        else:
+            cartItem = Anonymous_Cart.objects.get(session_id = request.session.session_key,product=product)
         if(int(quantity) != 0):
             cartItem.quantity = int(quantity)
         cartItem.save()
-        cart_count = Cart.objects.filter(user = request.user,purchased = False).count()
+        if request.user.is_authenticated:
+            cart_count = Cart.objects.filter(user = request.user,purchased = False).count()
+        else:
+            cart_count = Anonymous_Cart.objects.filter(session_id = request.session.session_key).count()
         response = {
             'cart_count':cart_count,
         }
@@ -134,9 +160,14 @@ def addToCart(request,id=None):
         return redirect('user_home')
 
 
-@login_required(login_url='/signin')
+@never_cache
 def removefromcart(request,id):
-    item = Cart.objects.get(id = id)
+    if request.user.is_authenticated:
+        item = Cart.objects.get(id = id)
+        request.session['cart_count'] -= 1
+    else:
+        item = Anonymous_Cart.objects.filter(id = id)
+        request.session['cart_count'] -= 1
     item.delete()
     return redirect('cart')
 
@@ -286,7 +317,6 @@ def payment_callback(request,id):
     cart = Cart.objects.filter(user = request.user,purchased = False)
     amount = 0
     wallet_amount = request.session.get('wallet_amount')
-    print(wallet_amount)
     for item in cart:
         amount += item.total
     amount -= wallet_amount
@@ -330,8 +360,6 @@ def payment_callback(request,id):
             order.save()
            
         order.save()
-        print(wallet_amount)
-        print( order.amount_to_pay)
         context = {
                 'cart' : cart,
                 'total': order.amount_to_pay,
@@ -396,18 +424,21 @@ def user_order_history(request,id = None):
         } 
     return render(request,'user_order_history.html',context)
 
-@login_required(login_url='/signin')
+@never_cache
 def cart_count_change(request):
     if request.method == 'POST':
         data = request.body.decode("utf-8")
         data = json.loads(data)
         cart_item_id = data.get('cart_item_id')
         count = data.get('count')
-        cart_item = Cart.objects.get(id = cart_item_id)
+        if request.user.is_authenticated:
+            cart_item = Cart.objects.get(id = cart_item_id)
+            cart = Cart.objects.filter(user = request.user,purchased = False)
+        else:
+            cart_item = Anonymous_Cart.objects.get(id = cart_item_id)
+            cart = Anonymous_Cart.objects.filter(session_id = request.session.session_key)
         cart_item.quantity = count
         cart_item.save()
-
-        cart = Cart.objects.filter(user = request.user,purchased = False)
         cart_total = 0
         cart_total = sum([item.total for item in cart])
         response = {

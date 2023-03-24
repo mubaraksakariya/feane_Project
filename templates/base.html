@@ -63,7 +63,7 @@
 
           <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <div class="user_option ">
-        
+            {% if request.user.is_authenticated %}
               <li class="dropdown btn btn-sm btn-outline-warning rounded-3 mx-2 text-white px-0">
                 <a class="nav-link " href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="message_read()" >
                   <i class="bi bi-envelope-exclamation text-white"></i>
@@ -91,15 +91,20 @@
                     </div>
                 </div>
               </li>
+            {% endif %}
             {% csrf_token %}
               <a href="{% url 'profile' %}" class="user_link btn btn-sm rounded-3 px-3 btn-outline-warning text-white">
                 <i class="fa fa-user " aria-hidden="true"></i>
               </a>
               <a href="{% url 'cart' %}" class="btn rounded-3 btn-sm btn-outline-warning text-white cart-link">
                 <span class="bi bi-cart"></span>
-                <span id = "cart_count" class="badge bg-body-tertiary text-dark">{{request.user.cart_count}}</span>
+                <span id = "cart_count" class="badge bg-body-tertiary text-dark">{{request.session.cart_count}}</span>
               </a>
-              <a href="{% url 'customer_signout' %}" class="btn rounded-3 btn-sm btn-outline-danger ms-5 text-white">logout</a>
+              {% if request.user.is_authenticated %}
+                <a href="{% url 'customer_signout' %}" class="btn rounded-3 btn-sm btn-outline-danger ms-5 text-white">logout</a>
+              {% else %}
+              <a href="{% url 'signin' %}" class="btn rounded-3 btn-sm btn-outline-danger ms-5 text-white">log in</a>
+              {% endif %}
             </div>
           </div>
           

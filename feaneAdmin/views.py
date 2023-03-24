@@ -425,6 +425,11 @@ def cancel_order(request,order_id):
     if order.payment_details.payment_type != 'cod':
         wallet = Wallet.objects.create(user = order.user,amount = order.total)
         wallet = Wallet.objects.create(user = request.user,amount = -1 * order.total)
+    cart = order.cart.all()
+    for item in cart:
+        product = Product.objects.get(id = item.product.id)
+        product.product_stock_amount += item.quantity
+        product.save()
     order.order_processed = True
     order.status = '6'
     order.save()
@@ -681,11 +686,7 @@ def payment_chart(request):
             'list1': payment_type_count,
         }
         return JsonResponse(data)
-    context = {
-        'list1':['cod','upi'],
-        'list2' : [25,15],
-    }
-    return render(request,'payment_reports.html',context)
+    return render(request,'payment_reports.html')
 
 
 @admin_login_required

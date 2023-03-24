@@ -52,7 +52,17 @@ class Cart(models.Model):
     @property
     def total(self):
         return (self.product.product_prize) * (self.quantity)
+
+class Anonymous_Cart(models.Model):
+    session_id = models.CharField(_(""), max_length=50)
+    product = models.ForeignKey("Product", verbose_name=_(""), on_delete=models.CASCADE)
+    quantity = models.IntegerField(_(""),default = 1)
     
+    @property
+    def total(self):
+        return (self.product.product_prize) * (self.quantity)
+
+
 class Order(models.Model):
     STATUS_CHOICES = (
         ('0', 'Requested for Cancel'),
