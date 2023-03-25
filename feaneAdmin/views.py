@@ -601,14 +601,14 @@ def edit_coupon(request):
             coupon.discount = discount
             coupon.save()
             response = {
-                'message':'Coupon Updated',
+                'message':'Coupon String Updated',
                 'done':True,
             }
         else:
             coupon.discount = discount
             coupon.save()
             response = {
-                'message':'Coupon code cannot be applied, check if it already exists or empty',
+                'message':'Coupon Percentage updated',
                 'done':False,
             }
         return JsonResponse(response)
