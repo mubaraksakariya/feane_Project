@@ -10,6 +10,7 @@ from django.http import FileResponse, HttpResponseRedirect, JsonResponse
 from django.core.serializers import serialize
 from django.db.models import ExpressionWrapper,F,FloatField
 from django.contrib import messages
+from django.urls import reverse
 import razorpay
 import requests
 from django.views.decorators.csrf import csrf_exempt
@@ -20,6 +21,9 @@ from django.core.paginator import Paginator
 
 def store(request,id=None):
     cat = request.GET.get('item')
+    if request.GET.get('search_term'):
+        print(request.GET.get('search_term'))
+        return redirect(reverse('search'))
     if id is not None:
         category = Category.objects.get(id = id)
         products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
@@ -52,9 +56,14 @@ def search(request):
         search_term =  request.POST['search-term']
     else:
         search_term =  request.GET.get('item')
-    if search_term is None:
+    cat = request.GET.get('item')
+    if search_term is None or search_term == 'None':
         search_term = ""
-    products = Product.objects.filter(product_name__icontains = search_term).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
+    if cat is not None and cat !='None':
+        category = Category.objects.get(id = cat)
+        products = Product.objects.filter(product_name__icontains = search_term,category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
+    else:
+        products = Product.objects.filter(product_name__icontains = search_term).exclude(product_stock_amount__lte = 1).order_by('-updated_at')       
     if request.user.is_authenticated:
         cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
         request.session['cart_count'] = cart_count
@@ -68,8 +77,10 @@ def search(request):
     
     context = {
         'products':products,
+        'category':Category.objects.all(),
         'cart_count':cart_count,
-        'item':search_term,
+        'item':cat,
+        'search_term':search_term,
     }
     return render(request,"index.html",context=context)   
 

@@ -150,7 +150,11 @@ def additem(request,id = None):
             #     image = Images.objects.filter(product = id)
             #     image.delete()
             for image in images:
-                    image = Images.objects.create(product=product,image = image) 
+                    image = Images.objects.create(product=product,image = image)
+            images_to_delete = request.POST.getlist('image_to_delete')
+            for item in images_to_delete:
+                image = Images.objects.get(id = item)
+                image.delete()
         else:
             product = Product.objects.create(
                 product_name = product_name,
@@ -163,7 +167,7 @@ def additem(request,id = None):
             )
             for image in images:
                 image = Images.objects.create(product=product,image = image)
-            # product.save()       
+            # product.save()      
         return redirect('inventory')
     context = {
         'categories' : Category.objects.all(),
