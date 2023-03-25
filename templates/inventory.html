@@ -27,7 +27,7 @@
 				</ul>
 				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
 					{% csrf_token %}
-					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string" value = "{{search_string}}">
 					<input type="text" name="item" value="product" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>
@@ -58,7 +58,7 @@
 			<td class='text-center'>{{ product.product_category.category_name }}</td>
 			<td class='text-center'>{{ product.product_size.size_type }}</td>
 			<td class='text-center'>
-				<a class="btn btn-outline-success" href="{% url 'editproduct' product.id %}">Update</a>
+				<a class="btn btn-outline-success px-4" href="{% url 'editproduct' product.id %}">Edit</a>
 				<a class="btn btn-outline-danger" href="{% url 'deleteitem' product.id %}">Delete</a>
 			</td>
 		</tr>

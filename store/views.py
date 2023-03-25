@@ -21,18 +21,18 @@ from django.core.paginator import Paginator
 
 def store(request,id=None):
     cat = request.GET.get('item')
-    if request.GET.get('search_term'):
-        print(request.GET.get('search_term'))
-        return redirect(reverse('search'))
+    search_term = request.GET.get('search_term')
+    if search_term is  None or search_term == 'None':
+        search_term = ''
     if id is not None:
         category = Category.objects.get(id = id)
-        products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
+        products = Product.objects.filter(product_name__icontains = search_term,is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
         cat = id
     elif cat is not None and cat !='None':
         category = Category.objects.get(id = cat)
-        products = Product.objects.filter(is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
+        products = Product.objects.filter(product_name__icontains = search_term,is_deleted = False,product_category = category).exclude(product_stock_amount__lte = 1).order_by('-updated_at')
     else:  
-        products = Product.objects.filter(is_deleted = False).exclude(product_stock_amount__lte = 1).order_by('-updated_at')     
+        products = Product.objects.filter(product_name__icontains = search_term,is_deleted = False).exclude(product_stock_amount__lte = 1).order_by('-updated_at')     
     if request.user.is_authenticated:
         cart_count = Cart.objects.filter(user = request.user).exclude(purchased = True).count()
         request.session['cart_count'] = cart_count
@@ -47,6 +47,7 @@ def store(request,id=None):
         'cart_count':cart_count,
         'category':Category.objects.all(),
         'item' : cat,
+        'search_term':search_term,
     }
     return render(request,"index.html",context=context)
 

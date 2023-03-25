@@ -40,7 +40,7 @@
             <th scope="col">Order id</th>
             <th scope="col">Date of order</th>
             <th scope="col">Payment mode</th>
-            <th scope="col">Order_status</th>
+            <th scope="col">Coupon String</th>
             <th scope="col">Total amount</th>
             <th scope="col">Status</th>
             <th scope="col">Manage</th>
@@ -53,8 +53,8 @@
             <td>{{ items.id }}</td>
             <td>{{ items.order_date }}</td>
             <td>{{ items.payment_details.payment_type }}</td>
-            <td>{{ items.order_processed }}</td>
-            <td>{{ items.total }}</td>
+            <td>{{ items.coupon.name }}</td>
+            <td>{{ items.amount_to_pay }}</td>
             <td>{{ items.get_status_display }}</td>
             <td>
               <div class="">

@@ -103,11 +103,14 @@ def inventory(request):
 def editproduct(request,id):
     product = Product.objects.get(id = id)
     images = Images.objects.filter(product = product)
-    print(images)
+    try:
+        sizes = Size.objects.all().exclude(id = Product.objects.get(id = id).product_size.id)
+    except:
+        sizes = Size.objects.all()
     context = {
         'product' : product ,
         'categories': Category.objects.all().exclude(id = Product.objects.get(id = id).product_category.id ),
-        'sizes' : Size.objects.all().exclude(id = Product.objects.get(id = id).product_size.id),
+        'sizes' : sizes, 
         'images' : images,
     }  
     return render(request,'editproduct.html',context)
@@ -539,6 +542,7 @@ def adminside_search(request):
         coupon = paginator.get_page(page_number)
         context = {
             'coupon' : coupon,
+            'search_string':search_string,
         }
         return render(request,'coupons.html',context=context)
     if item == 'order':

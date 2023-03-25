@@ -27,7 +27,7 @@
 				</ul>
 				<form class="d-flex px-3" method="post" action="{% url 'adminside_search' %}">
 					{% csrf_token %}
-					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string">
+					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name = "search_string" value = "{{search_string}}">
 					<input type="text" name="item" value="coupon" hidden>
 					<button class="btn btn-outline-success" type="submit">Search</button>
 				</form>

@@ -22,9 +22,9 @@
       </form>
       
       <ul class="filters_menu">
-        <a href="{% url 'store' %}"><li data-filter="*" class="text-dark"   id = "all" >All</li></a>
+        <a href="{% url 'store' %}?search_term={{search_term}}"><li data-filter="*" class="text-dark"   id = "all" >All</li></a>
         {% for item in category %}
-        <a href="{% url 'store' item.id %}"><li class="text-dark" id="{{item.id}}">{{ item.category_name }}</li></a>
+        <a href="{% url 'store' item.id%}?search_term={{search_term}}"><li class="text-dark" id="{{item.id}}">{{ item.category_name }}</li></a>
         {% endfor %}
         <!-- <li data-filter=".pizza">Pizza</li>
         <li data-filter=".pasta">Pasta</li>
@@ -76,10 +76,10 @@
       </div>
       <div class="btn-box">
         {% if products.has_previous %}
-            <a href="?page={{ products.previous_page_number }}&item={{item}}">prev</a>
+            <a href="?page={{ products.previous_page_number }}&item={{item}}&search_term={{search_term}}">prev</a>
         {% endif %}
         {% if products.has_next %}
-            <a href="?page={{ products.next_page_number }}&item={{item}}">next</a>
+            <a href="?page={{ products.next_page_number }}&item={{item}}&search_term={{search_term}}">next</a>
         {% endif %}
       </div>
     </div>

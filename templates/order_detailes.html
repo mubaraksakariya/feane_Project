@@ -40,7 +40,10 @@
         </div>
         <div class="text-end">
             <p> <b class="h5">Order # :</b> {{order.id}}</p>
-            <p> <b class="h5">Order Total :</b> Rs {{order.total}} </p>  
+            {% if order.coupon %}
+            <p><b class="h5">Coupon discount# : </b>{{order.coupon.discount}} %</p>
+            {% endif %}
+            <p> <b class="h5">Order Total payed :</b> Rs {{order.amount_to_pay}} </p>  
         </div>   
     </div>
     <div class='d-flex justify-content-between'>
