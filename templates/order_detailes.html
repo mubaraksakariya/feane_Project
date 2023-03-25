@@ -16,7 +16,7 @@
     <table class="table table-dark table-hover">
         <thead>
           <tr class="text-center">
-            <th scope="col">User Name</th>
+            <th scope="col">id</th>
             <th scope="col">Product name</th>
             <th scope="col">Quantity</th>
             <th scope="col">Total</th>
@@ -26,7 +26,7 @@
         <tbody>
             {% for items in cart %}
           <tr class="text-center"> 
-            <td>{{ items.user.first_name }}</td>
+            <td>{{ items.product.id }}</td>
             <td>{{ items.product.product_name }}</td>
             <td>{{ items.quantity }}</td>
             <td>{{ items.total }}</td>
