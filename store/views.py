@@ -50,7 +50,6 @@ def store(request,id=None):
     }
     return render(request,"index.html",context=context)
 
-
 def search(request):
     if request.method == 'POST':
         search_term =  request.POST['search-term']
