@@ -13,7 +13,7 @@
         {% csrf_token %}
         <div class="input-group d-flex justify-content-end">
           <div class="form-outline">
-            <input name="search-term" type="search" id="form1" class="form-control" placeholder="search"/>
+            <input name="search-term" type="search" id="form1" class="form-control" placeholder="search" value = "{{search_term}}" />
           </div>
           <button type="submit" class="btn btn-warning">
             <i class="fas fa-search"></i>

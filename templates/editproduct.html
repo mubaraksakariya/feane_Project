@@ -45,7 +45,7 @@
 </div>
 <div class="container ">
 <div class = "d-flex justify-content-center">
-    <form class=" w-75 p-4" method="post" action="{% url 'additem' 0 %}" enctype="multipart/form-data">
+    <form class=" w-75 p-4" method="post" id = "editform" action="{% url 'additem' 0 %}" enctype="multipart/form-data">
         {% csrf_token %}
         <input type="text" name="id" value="{{product.id}}" hidden>
         <div class="form-group row">
@@ -127,7 +127,7 @@
 <script>
   var fileInput = document.getElementById("fileInput");
   const preview = document.getElementById("previewImage");
-  
+  form = document.getElementById('editform');
   fileInput.addEventListener("change", function() {
     // preview.innerHTML = "";
     const files = fileInput.files;
@@ -183,19 +183,12 @@
     event.preventDefault()
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
     console.log(id);
-    fetch(`/admin/delete_image/${id}`, {
-      method: "DELETE",
-      headers: {
-        "X-CSRFToken": csrfToken,
-      },
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      })
-      .catch(error => {
-        console.error(error);
-    });
+    var input = document.createElement('input');
+    input.setAttribute('type', 'hidden');
+    input.setAttribute('name', 'image_to_delete');
+    input.setAttribute('value', id);
+    form.appendChild(input);
+    console.log(form);
     const divToRemove = document.getElementById(id);
     divToRemove.remove();
   }
